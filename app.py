@@ -6,7 +6,7 @@ import requests, os
 
 # ==== CONFIGURACIÓN ====
 TWELVE_API_KEY = "ce11749cb6904ddf948164c0324306f3"
-SYMBOL = "BTC/USD"
+SYMBOL = "BTCUSD"
 MODEL_URL = "https://crisdeyvid-gema-ai-model.hf.space/predict"
 INTERVAL_FILE = "interval.txt"
 
