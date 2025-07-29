@@ -3,39 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <title>Gema Model</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f8f9fa; }
-        .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 10px; padding: 30px; box-shadow: 0 2px 8px #0001; }
-        h2 { margin-bottom: 24px; }
-        label { font-weight: bold; }
-        input[type="text"] { width: 300px; padding: 8px; margin: 8px 0; border-radius: 4px; border: 1px solid #ccc; }
-        button { background: #2563eb; color: #fff; padding: 8px 20px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
-        button:hover { background: #1d4ed8; }
-        .msg { margin-top: 20px; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
-    <h2>Gema Model</h2>
-    <form id="formInterval">
-        <label>Tiempo del Indicador</label><br>
-        <input id="intervalo" type="text" placeholder="Tiempo (ej. 30min)" value="30min">
-        <button type="submit">Actualizar Indicadores</button>
-    </form>
-    <div class="msg" id="msg"></div>
+    <h2>Tiempo del Indicador</h2>
+    <div class="input-group">
+        <input type="text" id="interval-input" placeholder="Tiempo (ej. 30min)" value="30min">
+        <button onclick="actualizarIntervalo()">Actualizar Indicadores</button>
+    </div>
+    <h2>Código Json</h2>
+    <div class="json-box">
+        <pre id="json-code"></pre>
+        <button onclick="copiarJson()">Copiar</button>
+    </div>
 </div>
 <script>
-document.getElementById('formInterval').onsubmit = async function(e){
-    e.preventDefault();
-    let val = document.getElementById('intervalo').value.trim();
-    let res = await fetch('/set_interval', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({"interval": val})
-    });
-    let js = await res.json();
-    document.getElementById('msg').innerText = js.ok ? "Intervalo actualizado" : "Error";
+function actualizarIntervalo() {
+    const interval = document.getElementById("interval-input").value;
+    fetch("/set_interval", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({interval})
+    }).then(() => obtenerJson());
 }
+function obtenerJson() {
+    fetch("/obtener_json", {method: "POST"})
+        .then(res => res.json())
+        .then(data => {
+            let pretty = JSON.stringify(data, null, 2);
+            document.getElementById("json-code").textContent = pretty;
+        });
+}
+function copiarJson() {
+    let code = document.getElementById("json-code").textContent;
+    navigator.clipboard.writeText(code);
+}
+window.onload = obtenerJson;
 </script>
 </body>
 </html>
+
