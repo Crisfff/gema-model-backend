@@ -11,7 +11,6 @@ MODEL_URL = "https://crisdeyvid-gema-ai-model.hf.space/predict"
 INTERVAL_FILE = "interval.txt"
 
 # ========== WEB APP ==========
-
 app = FastAPI()
 app.mount("/frontend", StaticFiles(directory="frontend", html=True), name="frontend")
 
@@ -36,8 +35,11 @@ def get_interval():
 
 # ========== INDICADORES ==========
 
-def fetch_indicator(indicator, symbol, interval):
-    url = f"https://api.twelvedata.com/{indicator}?symbol={symbol.replace('/', '')}&interval={interval}&apikey={TWELVE_API_KEY}"
+def fetch_indicator(indicator, symbol, interval, extra_params=None):
+    """Obtiene el último valor de un indicador de Twelve Data."""
+    url = f"https://api.twelvedata.com/{indicator}?symbol={symbol}&interval={interval}&apikey={TWELVE_API_KEY}"
+    if extra_params:
+        url += "&" + extra_params
     resp = requests.get(url)
     data = resp.json()
     if "values" in data and len(data["values"]) > 0:
@@ -48,10 +50,10 @@ def fetch_indicator(indicator, symbol, interval):
 def obtener_features(symbol, interval):
     # RSI
     rsi = fetch_indicator("rsi", symbol, interval)
-    # EMA rápida (ej: 12)
-    ema_fast = fetch_indicator("ema", symbol, interval + "&time_period=12")
-    # EMA lenta (ej: 26)
-    ema_slow = fetch_indicator("ema", symbol, interval + "&time_period=26")
+    # EMA rápida (12)
+    ema_fast = fetch_indicator("ema", symbol, interval, "time_period=12")
+    # EMA lenta (26)
+    ema_slow = fetch_indicator("ema", symbol, interval, "time_period=26")
     # MACD (da histograma, macd, signal)
     macd = fetch_indicator("macd", symbol, interval)
 
@@ -86,7 +88,6 @@ def predict_for_app():
     return {"input": features, "modelo": respuesta}
 
 # ========== MAIN PARA LOCAL ==========
-
-if __name__ == "__main__":
+if name == "main":
     import uvicorn
     uvicorn.run("app:app", host="0.0.0.0", port=7860, reload=True)
