@@ -6,11 +6,11 @@ import requests, os
 
 # ==== CONFIGURACIÓN ====
 TWELVE_API_KEY = "ce11749cb6904ddf948164c0324306f3"
-SYMBOL = "BTC/USD"
+SYMBOL = "BTC/USD"                     # Formato válido para Twelve Data
 MODEL_URL = "https://crisdeyvid-gema-ai-model.hf.space/predict"
 INTERVAL_FILE = "interval.txt"
 
-# ========== APP & STATIC ==========
+# ========== APP & STATIC FILES ==========
 app = FastAPI()
 app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
 
@@ -27,37 +27,52 @@ async def set_interval(data: IntervalModel):
         f.write(data.interval.strip())
     return {"ok": True, "interval": data.interval}
 
-def get_interval():
+def get_interval() -> str:
     if not os.path.exists(INTERVAL_FILE):
         return "30min"
-    with open(INTERVAL_FILE, "r") as f:
-        return f.read().strip()
+    return open(INTERVAL_FILE).read().strip()
 
-# ========== INDICADORES ==========
+# ========== FUNCIONES DE INDICADORES ==========
 def fetch_indicator(indicator: str, symbol: str, interval: str, extra_params: str = "") -> dict:
+    """
+    Llama a Twelve Data para el indicador dado y devuelve el primer valor.
+    """
     url = f"https://api.twelvedata.com/{indicator}?symbol={symbol}&interval={interval}&apikey={TWELVE_API_KEY}"
     if extra_params:
         url += f"&{extra_params}"
-    print(f"[DEBUG] Fetching {indicator} → {url}")
+    print(f"[DEBUG] GET {indicator} → {url}")
     resp = requests.get(url)
     data = resp.json()
-    print(f"[DEBUG] Response {indicator} → {data}")
+    print(f"[DEBUG] {indicator} response → {data}")
     if "values" in data and data["values"]:
         return data["values"][0]
     raise Exception(f"Error obteniendo {indicator}: {data}")
 
 def obtener_features(symbol: str, interval: str) -> list:
-    rsi = fetch_indicator("rsi", symbol, interval)
-    ema_fast = fetch_indicator("ema", symbol, interval, "time_period=12")
-    ema_slow = fetch_indicator("ema", symbol, interval, "time_period=26")
-    macd = fetch_indicator("macd", symbol, interval)
-    features = [
-        float(rsi["rsi"]),
-        float(ema_fast["ema"]),
-        float(ema_slow["ema"]),
-        float(macd["macd"]),
-        float(macd["signal"])
-    ]
+    """
+    Extrae RSI, EMA rápida (12), EMA lenta (26), MACD y MACD signal.
+    Maneja claves alternativas para 'signal' si hiciera falta.
+    """
+    # RSI
+    rsi_data = fetch_indicator("rsi", symbol, interval)
+    rsi = float(rsi_data.get("rsi", 0))
+
+    # EMA rápida (time_period=12)
+    ema_fast_data = fetch_indicator("ema", symbol, interval, "time_period=12")
+    ema_fast = float(ema_fast_data.get("ema", 0))
+
+    # EMA lenta (time_period=26)
+    ema_slow_data = fetch_indicator("ema", symbol, interval, "time_period=26")
+    ema_slow = float(ema_slow_data.get("ema", 0))
+
+    # MACD
+    macd_data = fetch_indicator("macd", symbol, interval)
+    macd = float(macd_data.get("macd", 0))
+    # Señal puede estar bajo "signal" o "macd_signal"
+    signal_key = "signal" if "signal" in macd_data else "macd_signal"
+    macd_signal = float(macd_data.get(signal_key, 0))
+
+    features = [rsi, ema_fast, ema_slow, macd, macd_signal]
     print(f"[DEBUG] Features extraídas → {features}")
     return features
 
