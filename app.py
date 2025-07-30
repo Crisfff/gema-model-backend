@@ -11,27 +11,26 @@ from datetime import datetime, timezone, timedelta
 import firebase_admin
 from firebase_admin import credentials, db
 
-# ================= CONFIGURACIÓN ====================
+# =============== CONFIGURACIÓN ===============
 TWELVE_API_KEY = "ce11749cb6904ddf948164c0324306f3"
 SYMBOL = "BTC/USD"
 MODEL_URL = "https://crisdeyvid-gema-ai-model.hf.space/predict"
 CRYPTO_API = "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD"
 
-# ---- Credenciales de Firebase (ajusta la ruta al tuyo) ----
-FIREBASE_CRED = "firebase.json"  # Debes subir este archivo
+FIREBASE_CRED = "firebase.json"  # Este archivo debe estar en la raíz
 FIREBASE_URL = "https://gema-ai-model-default-rtdb.europe-west1.firebasedatabase.app"
 
-# ================= INICIAR FIREBASE ==================
+# =============== INICIAR FIREBASE ===============
 if not firebase_admin._apps:
     cred = credentials.Certificate(FIREBASE_CRED)
     firebase_admin.initialize_app(cred, {
         "databaseURL": FIREBASE_URL
     })
 
-# ================== FASTAPI ==========================
+# =============== FASTAPI APP ===============
 app = FastAPI()
 
-# ================== INDICADORES ======================
+# =============== FUNCIONES AUXILIARES ===============
 def fetch_indicator(indicator, symbol, interval, extra_params=""):
     url = f"https://api.twelvedata.com/{indicator}?symbol={symbol.replace('/','')}&interval={interval}&apikey={TWELVE_API_KEY}"
     if extra_params:
@@ -63,29 +62,38 @@ def get_btc_price():
     return float(resp.json().get("USD", 0))
 
 def now_string():
-    dt = datetime.now(timezone.utc) + timedelta(hours=-3)  # Ajusta a tu zona si quieres
+    dt = datetime.now(timezone.utc) + timedelta(hours=-3)  # UTC-3 (ajusta si lo necesitas)
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
-# =============== FLUJO PRINCIPAL ======================
+def update_price_exit(node_id):
+    # Espera 30 minutos y actualiza el price_exit
+    time.sleep(30 * 60)
+    price_exit = get_btc_price()
+    dt_str = now_string()
+    # Actualiza en el mismo nodo
+    ref = db.reference(f"signals/{node_id}")
+    ref.update({
+        "price_exit": price_exit,
+        "datetime_exit": dt_str
+    })
+
+# =============== ENDPOINT PRINCIPAL ===============
 @app.post("/full_signal")
 def full_signal():
     try:
-        # 1. Features e intervalo
         interval = "30min"
         features = obtener_features(SYMBOL, interval)
-        # 2. Precio de entrada
         price_entry = get_btc_price()
-        # 3. Timestamp y hora legible
         timestamp = int(time.time())
         dt_str = now_string()
-        # 4. Enviar al modelo
         payload = {"features": features}
         r = requests.post(MODEL_URL, json=payload, timeout=20)
         modelo_response = r.json()
-        # 5. Nodo aleatorio
+
         node_id = "".join([str(random.randint(0, 9)) for _ in range(5)])
-        path = f"Signal/{node_id}"
-        # 6. Guardar todo en Firebase
+        ref = db.reference(f"signals/{node_id}")
+
+        # Guardar datos iniciales
         init_data = {
             "features": features,
             "price_entry": price_entry,
@@ -93,32 +101,19 @@ def full_signal():
             "confidence": modelo_response.get("confianza", ""),
             "timestamp": timestamp,
             "datetime": dt_str,
+            "price_exit": None,
+            "datetime_exit": None
         }
-        db.reference(path).set(init_data)
+        ref.set(init_data)
 
-        # 7. Iniciar el thread para esperar 30 min y actualizar
-        def update_exit_price(node_id):
-            time.sleep(1800)  # 30 min
-            price_exit = get_btc_price()
-            dt_exit = now_string()
-            db.reference(f"Signal/{node_id}").update({
-                "price_exit": price_exit,
-                "exit_time": dt_exit,
-                "exit_timestamp": int(time.time())
-            })
+        # Lanzar thread para actualizar el price_exit a los 30 minutos
+        threading.Thread(target=update_price_exit, args=(node_id,), daemon=True).start()
 
-        threading.Thread(target=update_exit_price, args=(node_id,)).start()
-
-        return JSONResponse({
-            "ok": True,
-            "path": path,
-            "data": init_data,
-            "info": "Señal generada y guardada. price_exit se actualizará en 30 minutos."
-        })
+        return JSONResponse({"node_id": node_id, "entrada": init_data})
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
-# =============== FIN FASTAPI =========================
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=7860, reload=True)
+# =============== TEST ===============
+@app.get("/")
+def ping():
+    return {"ok": True, "msg": "Backend running!"}
