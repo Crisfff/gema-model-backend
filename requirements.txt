@@ -1,5 +1,6 @@
+python-dotenv
+requests
+python_jwt
 fastapi
 uvicorn
-requests
-jinja2
-python-multipart
+firebase-admin
