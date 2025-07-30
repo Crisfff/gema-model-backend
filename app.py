@@ -13,7 +13,7 @@ from firebase_admin import credentials, db
 
 # =============== CONFIGURACIÓN ===============
 TWELVE_API_KEY = "ce11749cb6904ddf948164c0324306f3"
-SYMBOL = "BTCUSD"
+SYMBOL = "BTC/USD"
 MODEL_URL = "https://crisdeyvid-gema-ai-model.hf.space/predict"
 CRYPTO_API = "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD"
 
@@ -32,7 +32,7 @@ app = FastAPI()
 
 # =============== FUNCIONES AUXILIARES ===============
 def fetch_indicator(indicator, symbol, interval, extra_params=""):
-    url = f"https://api.twelvedata.com/{indicator}?symbol={symbol.replace('/','')}&interval={interval}&apikey={TWELVE_API_KEY}"
+    url = f"https://api.twelvedata.com/{indicator}?symbol={symbol}&interval={interval}&apikey={TWELVE_API_KEY}"
     if extra_params:
         url += f"&{extra_params}"
     resp = requests.get(url)
