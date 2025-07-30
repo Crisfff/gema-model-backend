@@ -1,30 +1,19 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 import requests
-import os
 import random
 import time
 import threading
 from datetime import datetime, timezone, timedelta
 
-import firebase_admin
-from firebase_admin import credentials, db
-
-# =============== CONFIGURACIÓN ===============
+# ================= CONFIGURACIÓN =================
 TWELVE_API_KEY = "ce11749cb6904ddf948164c0324306f3"
 SYMBOL = "BTC/USD"
 MODEL_URL = "https://crisdeyvid-gema-ai-model.hf.space/predict"
 CRYPTO_API = "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD"
 
-FIREBASE_CRED = "firebase.json"  # Nombre y ubicación exacta del archivo
+# --- SOLO ESTO NECESITAS DE FIREBASE ---
 FIREBASE_URL = "https://gema-ai-model-default-rtdb.europe-west1.firebasedatabase.app"
-
-# =============== INICIAR FIREBASE ===============
-if not firebase_admin._apps:
-    cred = credentials.Certificate(FIREBASE_CRED)
-    firebase_admin.initialize_app(cred, {
-        "databaseURL": FIREBASE_URL
-    })
 
 # =============== FASTAPI APP ===============
 app = FastAPI()
@@ -34,10 +23,8 @@ def fetch_indicator(indicator, symbol, interval, extra_params=""):
     url = f"https://api.twelvedata.com/{indicator}?symbol={symbol}&interval={interval}&apikey={TWELVE_API_KEY}"
     if extra_params:
         url += f"&{extra_params}"
-    print(f"[TwelveData] URL: {url}")
     resp = requests.get(url)
     data = resp.json()
-    print(f"[TwelveData] Response: {data}")
     if "values" in data and data["values"]:
         return data["values"][0]
     raise Exception(f"Error obteniendo {indicator}: {data}")
@@ -56,32 +43,27 @@ def obtener_features(symbol, interval):
         float(macd["macd"]),
         float(macd.get(signal_key, 0))
     ]
-    print(f"[Features] {features}")
     return features
 
 def get_btc_price():
     resp = requests.get(CRYPTO_API)
-    precio = resp.json().get("USD", 0)
-    print(f"[BTC Price] {precio}")
-    return float(precio)
+    return float(resp.json().get("USD", 0))
 
 def now_string():
     dt = datetime.now(timezone.utc) + timedelta(hours=-3)  # UTC-3 (ajusta si lo necesitas)
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 def update_price_exit(node_id):
-    # Espera 30 minutos y actualiza el price_exit
-    print(f"[Thread] Esperando 30 minutos para actualizar price_exit en nodo {node_id}")
     time.sleep(30 * 60)
     price_exit = get_btc_price()
     dt_str = now_string()
-    # Actualiza en el mismo nodo
-    ref = db.reference(f"signals/{node_id}")
-    ref.update({
+    # PATCH para actualizar solo los campos necesarios
+    url = f"{FIREBASE_URL}/signals/{node_id}.json"
+    payload = {
         "price_exit": price_exit,
         "datetime_exit": dt_str
-    })
-    print(f"[Firebase] Nodo {node_id} actualizado con price_exit={price_exit}")
+    }
+    requests.patch(url, json=payload)
 
 # =============== ENDPOINT PRINCIPAL ===============
 @app.post("/full_signal")
@@ -95,34 +77,29 @@ def full_signal():
         payload = {"features": features}
         r = requests.post(MODEL_URL, json=payload, timeout=20)
         modelo_response = r.json()
-        print(f"[Model Response] {modelo_response}")
 
         node_id = "".join([str(random.randint(0, 9)) for _ in range(5)])
-        ref = db.reference(f"signals/{node_id}")
 
-        # Tolerancia a diferentes nombres de campo
-        signal_val = modelo_response.get("signal") or modelo_response.get("señal") or ""
-        conf_val = modelo_response.get("confianza") or modelo_response.get("confidence") or ""
-        
+        # Preparar datos iniciales para Firebase
         init_data = {
             "features": features,
             "price_entry": price_entry,
-            "signal": signal_val,
-            "confidence": conf_val,
+            "signal": modelo_response.get("signal", ""),
+            "confidence": modelo_response.get("confianza", ""),
             "timestamp": timestamp,
             "datetime": dt_str,
             "price_exit": None,
             "datetime_exit": None
         }
-        ref.set(init_data)
-        print(f"[Firebase] Nuevo nodo creado: signals/{node_id}")
+        # POST para crear el nodo en Firebase
+        url = f"{FIREBASE_URL}/signals/{node_id}.json"
+        requests.put(url, json=init_data)
 
-        # Lanzar thread para actualizar el price_exit a los 30 minutos
+        # Lanzar thread para actualizar price_exit a los 30 minutos
         threading.Thread(target=update_price_exit, args=(node_id,), daemon=True).start()
 
         return JSONResponse({"node_id": node_id, "entrada": init_data})
     except Exception as e:
-        print(f"[ERROR] {e}")
         return JSONResponse({"error": str(e)}, status_code=500)
 
 # =============== TEST ===============
