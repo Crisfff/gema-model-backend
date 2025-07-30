@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
 import requests
 import os
 import random
@@ -17,7 +16,7 @@ SYMBOL = "BTC/USD"
 MODEL_URL = "https://crisdeyvid-gema-ai-model.hf.space/predict"
 CRYPTO_API = "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD"
 
-FIREBASE_CRED = "firebase.json"  # Este archivo debe estar en la raíz
+FIREBASE_CRED = "firebase.json"  # Nombre y ubicación exacta del archivo
 FIREBASE_URL = "https://gema-ai-model-default-rtdb.europe-west1.firebasedatabase.app"
 
 # =============== INICIAR FIREBASE ===============
@@ -35,8 +34,10 @@ def fetch_indicator(indicator, symbol, interval, extra_params=""):
     url = f"https://api.twelvedata.com/{indicator}?symbol={symbol}&interval={interval}&apikey={TWELVE_API_KEY}"
     if extra_params:
         url += f"&{extra_params}"
+    print(f"[TwelveData] URL: {url}")
     resp = requests.get(url)
     data = resp.json()
+    print(f"[TwelveData] Response: {data}")
     if "values" in data and data["values"]:
         return data["values"][0]
     raise Exception(f"Error obteniendo {indicator}: {data}")
@@ -55,11 +56,14 @@ def obtener_features(symbol, interval):
         float(macd["macd"]),
         float(macd.get(signal_key, 0))
     ]
+    print(f"[Features] {features}")
     return features
 
 def get_btc_price():
     resp = requests.get(CRYPTO_API)
-    return float(resp.json().get("USD", 0))
+    precio = resp.json().get("USD", 0)
+    print(f"[BTC Price] {precio}")
+    return float(precio)
 
 def now_string():
     dt = datetime.now(timezone.utc) + timedelta(hours=-3)  # UTC-3 (ajusta si lo necesitas)
@@ -67,6 +71,7 @@ def now_string():
 
 def update_price_exit(node_id):
     # Espera 30 minutos y actualiza el price_exit
+    print(f"[Thread] Esperando 30 minutos para actualizar price_exit en nodo {node_id}")
     time.sleep(30 * 60)
     price_exit = get_btc_price()
     dt_str = now_string()
@@ -76,6 +81,7 @@ def update_price_exit(node_id):
         "price_exit": price_exit,
         "datetime_exit": dt_str
     })
+    print(f"[Firebase] Nodo {node_id} actualizado con price_exit={price_exit}")
 
 # =============== ENDPOINT PRINCIPAL ===============
 @app.post("/full_signal")
@@ -89,28 +95,34 @@ def full_signal():
         payload = {"features": features}
         r = requests.post(MODEL_URL, json=payload, timeout=20)
         modelo_response = r.json()
+        print(f"[Model Response] {modelo_response}")
 
         node_id = "".join([str(random.randint(0, 9)) for _ in range(5)])
         ref = db.reference(f"signals/{node_id}")
 
-        # Guardar datos iniciales
+        # Tolerancia a diferentes nombres de campo
+        signal_val = modelo_response.get("signal") or modelo_response.get("señal") or ""
+        conf_val = modelo_response.get("confianza") or modelo_response.get("confidence") or ""
+        
         init_data = {
             "features": features,
             "price_entry": price_entry,
-            "signal": modelo_response.get("signal", ""),
-            "confidence": modelo_response.get("confianza", ""),
+            "signal": signal_val,
+            "confidence": conf_val,
             "timestamp": timestamp,
             "datetime": dt_str,
             "price_exit": None,
             "datetime_exit": None
         }
         ref.set(init_data)
+        print(f"[Firebase] Nuevo nodo creado: signals/{node_id}")
 
         # Lanzar thread para actualizar el price_exit a los 30 minutos
         threading.Thread(target=update_price_exit, args=(node_id,), daemon=True).start()
 
         return JSONResponse({"node_id": node_id, "entrada": init_data})
     except Exception as e:
+        print(f"[ERROR] {e}")
         return JSONResponse({"error": str(e)}, status_code=500)
 
 # =============== TEST ===============
