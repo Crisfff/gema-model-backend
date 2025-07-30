@@ -13,7 +13,7 @@ from firebase_admin import credentials, db
 
 # =============== CONFIGURACIÓN ===============
 TWELVE_API_KEY = "ce11749cb6904ddf948164c0324306f3"
-SYMBOL = "BTC/USD"
+SYMBOL = "BTCUSD"
 MODEL_URL = "https://crisdeyvid-gema-ai-model.hf.space/predict"
 CRYPTO_API = "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD"
 
