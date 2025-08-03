@@ -3,22 +3,19 @@ from fastapi.responses import JSONResponse
 import requests
 import random
 import time
-import threading
 from datetime import datetime, timezone, timedelta
 
-# ================= CONFIGURACIÓN =================
+# ====== CONFIGURACIÓN ======
 TWELVE_API_KEY = "ce11749cb6904ddf948164c0324306f3"
 SYMBOL = "BTC/USD"
 MODEL_URL = "https://crisdeyvid-gema-ai-model.hf.space/predict"
 CRYPTO_API = "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD"
-
-# --- SOLO ESTO NECESITAS DE FIREBASE ---
 FIREBASE_URL = "https://gema-ai-model-default-rtdb.europe-west1.firebasedatabase.app"
 
-# =============== FASTAPI APP ===============
+# ====== FASTAPI APP ======
 app = FastAPI()
 
-# =============== FUNCIONES AUXILIARES ===============
+# ====== FUNCIONES DE AYUDA ======
 def fetch_indicator(indicator, symbol, interval, extra_params=""):
     url = f"https://api.twelvedata.com/{indicator}?symbol={symbol}&interval={interval}&apikey={TWELVE_API_KEY}"
     if extra_params:
@@ -34,7 +31,6 @@ def obtener_features(symbol, interval):
     ema_fast = fetch_indicator("ema", symbol, interval, "time_period=12")
     ema_slow = fetch_indicator("ema", symbol, interval, "time_period=26")
     macd = fetch_indicator("macd", symbol, interval)
-    # "signal" puede llamarse así o "macd_signal"
     signal_key = "signal" if "signal" in macd else "macd_signal"
     features = [
         float(rsi["rsi"]),
@@ -50,22 +46,10 @@ def get_btc_price():
     return float(resp.json().get("USD", 0))
 
 def now_string():
-    dt = datetime.now(timezone.utc) + timedelta(hours=-3)  # UTC-3 (ajusta si lo necesitas)
+    dt = datetime.now(timezone.utc) + timedelta(hours=-3)  # UTC-3 Cuba, cambia si quieres
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
-def update_price_exit(node_id):
-    time.sleep(30 * 60)
-    price_exit = get_btc_price()
-    dt_str = now_string()
-    # PATCH para actualizar solo los campos necesarios
-    url = f"{FIREBASE_URL}/signals/{node_id}.json"
-    payload = {
-        "price_exit": price_exit,
-        "datetime_exit": dt_str
-    }
-    requests.patch(url, json=payload)
-
-# =============== ENDPOINT PRINCIPAL ===============
+# ====== CREAR NUEVA SEÑAL ======
 @app.post("/full_signal")
 def full_signal():
     try:
@@ -80,7 +64,6 @@ def full_signal():
 
         node_id = "".join([str(random.randint(0, 9)) for _ in range(5)])
 
-        # Preparar datos iniciales para Firebase
         init_data = {
             "features": features,
             "price_entry": price_entry,
@@ -91,18 +74,45 @@ def full_signal():
             "price_exit": None,
             "datetime_exit": None
         }
-        # POST para crear el nodo en Firebase
         url = f"{FIREBASE_URL}/signals/{node_id}.json"
         requests.put(url, json=init_data)
-
-        # Lanzar thread para actualizar price_exit a los 30 minutos
-        threading.Thread(target=update_price_exit, args=(node_id,), daemon=True).start()
-
         return JSONResponse({"node_id": node_id, "entrada": init_data})
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
-# =============== TEST ===============
+# ====== ACTUALIZAR PRECIO DE SALIDA POR CRON ======
+@app.post("/update_price_exit")
+def update_price_exit():
+    try:
+        # 1. Obtener todos los signals de Firebase
+        url = f"{FIREBASE_URL}/signals.json"
+        resp = requests.get(url)
+        data = resp.json()
+        now = int(time.time())
+        actualizados = []
+        for node_id, node in (data or {}).items():
+            # Si ya tiene price_exit, saltar
+            if node.get("price_exit") is not None:
+                continue
+            # Si aún no han pasado 30 minutos, saltar
+            ts = node.get("timestamp", 0)
+            if now - int(ts) < 30*60:
+                continue
+            # Actualizar
+            price_exit = get_btc_price()
+            dt_str = now_string()
+            update_payload = {
+                "price_exit": price_exit,
+                "datetime_exit": dt_str
+            }
+            up_url = f"{FIREBASE_URL}/signals/{node_id}.json"
+            requests.patch(up_url, json=update_payload)
+            actualizados.append(node_id)
+        return {"updated": actualizados}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+# ====== TEST ======
 @app.get("/")
 def ping():
     return {"ok": True, "msg": "Backend running!"}
