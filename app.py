@@ -50,7 +50,7 @@ def get_btc_price():
     return float(resp.json().get("USD", 0))
 
 def now_string():
-    dt = datetime.now(timezone.utc) + timedelta(hours=-3)
+    dt = datetime.now(timezone.utc) + timedelta(hours=3)
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 # ====== MANEJO DE SHARED PREFERENCES (JSON LOCAL) ======
