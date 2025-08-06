@@ -13,7 +13,7 @@ TWELVE_API_KEY = "ce11749cb6904ddf948164c0324306f3"
 SYMBOL = "BTC/USD"
 MODEL_URL = "https://crisdeyvid-gema-ai-model.hf.space/predict"
 CRYPTO_API = "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD"
-FIREBASE_URL = "https://gema-ai-model-default-rtdb.europe-west1.firebasedatabase.app"
+FIREBASE_URL = "https://moviemaniaprime-default-rtdb.firebaseio.com"
 
 SHARED_PREFS = "shared_preferences.json"
 
@@ -50,7 +50,7 @@ def get_btc_price():
     return float(resp.json().get("USD", 0))
 
 def now_string():
-    dt = datetime.now(timezone.utc) + timedelta(hours=-3)
+    dt = datetime.now(timezone.utc) + timedelta(hours=3)
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 # ====== MANEJO DE SHARED PREFERENCES (JSON LOCAL) ======
@@ -79,7 +79,7 @@ def update_price_exit_if_needed():
         if last:
             now = int(time.time())
             elapsed = now - last["timestamp"]
-            if elapsed >= 5 * 60:  # Cambiado a 5 minutos (antes era 30*60)
+            if elapsed >= 30 * 60:  # Cambiado a 5 minutos (antes era 30*60)
                 node_id = last["node_id"]
                 price_exit = get_btc_price()
                 dt_str = now_string()
