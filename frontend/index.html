@@ -3,805 +3,513 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GEMA AI SIGNALS | Premium</title>
+    <title>GEMA AI SIGNALS</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1a1a1a;
+            --bg-accent: #2a2a2a;
+            --bg-menu: #0a0a0a;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --accent-color: #1e88e5;
+            --success-color: #4CAF50;
+            --error-color: #f44336;
+            --border-radius: 8px;
+            --transition: all 0.3s ease;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
-            background: linear-gradient(135deg, #0a0f1f, #151b30);
-            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
             min-height: 100vh;
-            padding: 25px;
             overflow-x: hidden;
-            position: relative;
         }
-        
-        /* Fondo futurista */
-        .grid-bg {
+
+        /* Menú lateral */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-menu);
+            padding: 30px 0;
+            height: 100vh;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                linear-gradient(rgba(15, 23, 42, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(15, 23, 42, 0.1) 1px, transparent 1px);
-            background-size: 40px 40px;
-            z-index: -2;
-            opacity: 0.2;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        /* Header Styles */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-            margin-bottom: 25px;
-            position: relative;
-            z-index: 10;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .logo-icon {
-            background: linear-gradient(135deg, #8b5cf6, #6366f1);
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
-            animation: pulseGlow 3s infinite alternate;
-        }
-        
-        @keyframes pulseGlow {
-            0% { box-shadow: 0 0 15px rgba(139, 92, 246, 0.5); }
-            100% { box-shadow: 0 0 30px rgba(99, 102, 241, 0.8); }
-        }
-        
-        .logo-text {
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            background: linear-gradient(to right, #e0e7ff, #c7d2fe);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
-            position: relative;
-        }
-        
-        .logo-text::after {
-            content: 'PREMIUM';
-            position: absolute;
-            top: -10px;
-            right: -50px;
-            font-size: 10px;
-            font-weight: bold;
-            color: #fcd34d;
-            background: rgba(124, 58, 237, 0.2);
-            padding: 2px 5px;
-            border-radius: 4px;
-            animation: shine 2s infinite;
-        }
-        
-        @keyframes shine {
-            0% { opacity: 0.7; }
-            50% { opacity: 1; text-shadow: 0 0 8px #fcd34d; }
-            100% { opacity: 0.7; }
-        }
-        
-        .download-btn {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(5, 150, 105, 0.4);
-            font-size: 16px;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-        
-        .download-btn::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
-            transform: rotate(45deg);
-            transition: all 0.5s ease;
-            z-index: -1;
-        }
-        
-        .download-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(5, 150, 105, 0.6);
-        }
-        
-        .download-btn:hover::before {
-            transform: rotate(45deg) translateX(100%);
-        }
-        
-        .download-btn:active {
-            transform: translateY(1px);
-        }
-        
-        /* Main Content */
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 35px;
-        }
-        
-        .card {
-            background: rgba(20, 28, 48, 0.7);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            border-radius: 16px;
-            padding: 28px;
-            box-shadow: 
-                0 15px 25px -10px rgba(0, 0, 0, 0.3),
-                inset 0 0 15px rgba(99, 102, 241, 0.1);
-            backdrop-filter: blur(12px);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .card::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, #6366f1, #8b5cf6, #6366f1);
-            z-index: -1;
-            border-radius: 18px;
-            animation: borderAnimation 3s infinite linear;
-        }
-        
-        @keyframes borderAnimation {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        .card:hover {
-            transform: translateY(-8px) scale(1.01);
-            box-shadow: 
-                0 20px 30px -10px rgba(0, 0, 0, 0.4),
-                inset 0 0 20px rgba(99, 102, 241, 0.2);
-        }
-        
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 26px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
-        }
-        
-        .card-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: #a5b4fc;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .card-title i {
-            color: #8b5cf6;
-        }
-        
-        .card-content {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            z-index: 100;
+            transition: var(--transition);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
-        
-        .interval-control {
-            display: flex;
-            gap: 18px;
-            align-items: center;
+
+        .sidebar-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 0 20px;
+            color: var(--text-primary);
+            letter-spacing: 1px;
         }
-        
-        .interval-select {
-            flex: 1;
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid rgba(99, 102, 241, 0.4);
-            border-radius: 10px;
-            padding: 14px 18px;
-            color: #e2e8f0;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
-        }
-        
-        .interval-select:focus {
-            outline: none;
-            border-color: #6366f1;
-            box-shadow: 
-                inset 0 0 10px rgba(0, 0, 0, 0.2),
-                0 0 15px rgba(99, 102, 241, 0.4);
-        }
-        
-        .save-btn {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
-            border: none;
-            padding: 14px 24px;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
-            font-size: 16px;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-        
-        .save-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transform: translateX(-100%);
-            transition: transform 0.5s ease;
-            z-index: -1;
-        }
-        
-        .save-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.6);
-        }
-        
-        .save-btn:hover::before {
-            transform: translateX(100%);
-        }
-        
-        .save-btn:active {
-            transform: translateY(1px);
-        }
-        
-        /* Home Card Placeholder */
-        .home-placeholder {
+
+        .menu-buttons {
             display: flex;
             flex-direction: column;
+            gap: 10px;
+            padding: 0 20px;
+        }
+
+        .menu-button {
+            display: flex;
             align-items: center;
-            justify-content: center;
-            height: 200px;
-            background: rgba(15, 23, 42, 0.3);
-            border-radius: 12px;
-            border: 1px dashed rgba(99, 102, 241, 0.4);
-            color: #94a3b8;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .home-placeholder i {
-            font-size: 48px;
-            margin-bottom: 20px;
-            color: #8b5cf6;
-            animation: float 3s infinite ease-in-out;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .home-placeholder div {
-            font-size: 18px;
+            padding: 14px 20px;
+            border-radius: var(--border-radius);
+            background-color: transparent;
+            color: var(--text-secondary);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1rem;
             font-weight: 500;
+        }
+
+        .menu-button:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .menu-button.active {
+            background-color: var(--bg-accent);
+            color: var(--text-primary);
+        }
+
+        .menu-button i {
+            margin-right: 12px;
+            font-size: 1.1rem;
+            width: 24px;
             text-align: center;
         }
-        
-        .home-placeholder::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, transparent, rgba(99, 102, 241, 0.1), transparent);
-            animation: scan 8s infinite linear;
+
+        /* Contenido principal */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            margin-left: 260px;
+            transition: var(--transition);
         }
-        
-        @keyframes scan {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
+
+        .main-header {
+            text-align: center;
+            margin-bottom: 40px;
         }
-        
-        /* Logs Section */
-        .logs-section {
-            background: rgba(20, 28, 48, 0.7);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            border-radius: 16px;
-            padding: 28px;
-            box-shadow: 
-                0 15px 25px -10px rgba(0, 0, 0, 0.3),
-                inset 0 0 15px rgba(99, 102, 241, 0.1);
-            backdrop-filter: blur(12px);
-            transition: transform 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .logs-section::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, #6366f1, #8b5cf6, #6366f1);
-            z-index: -1;
-            border-radius: 18px;
-            animation: borderAnimation 3s infinite linear;
-        }
-        
-        .logs-section:hover {
-            transform: translateY(-5px);
-        }
-        
-        .logs-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
-        }
-        
-        .logs-title {
-            font-size: 20px;
+
+        .main-title {
+            font-size: 2.8rem;
             font-weight: 700;
-            color: #a5b4fc;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #1e88e5, #4fc3f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             letter-spacing: 0.5px;
+        }
+
+        .main-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Formulario de intervalo */
+        .interval-section {
+            background-color: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            max-width: 500px;
+            margin: 0 auto 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 25px;
+        }
+
+        .input-label {
+            margin-bottom: 10px;
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .interval-input {
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            background-color: var(--bg-accent);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .interval-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.2);
+        }
+
+        .save-button {
+            width: 100%;
+            padding: 16px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            letter-spacing: 0.5px;
+        }
+
+        .save-button:hover {
+            background-color: #1976d2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(30, 136, 229, 0.3);
+        }
+
+        /* Bloque de logs */
+        .logs-container {
+            background-color: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .logs-header {
+            background-color: var(--bg-accent);
+            padding: 20px 30px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .logs-content {
+            padding: 25px 30px;
+            max-height: 450px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        .log-entry {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             display: flex;
             align-items: center;
-            gap: 10px;
         }
-        
-        .logs-title i {
-            color: #8b5cf6;
-        }
-        
-        .logs-container {
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid rgba(99, 102, 241, 0.4);
-            border-radius: 12px;
-            padding: 24px;
-            max-height: 360px;
-            overflow-y: auto;
-            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .log-entry {
-            padding: 16px 0;
-            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
-            font-family: 'Courier New', monospace;
-            font-size: 15px;
-            line-height: 1.6;
-            position: relative;
-            padding-left: 20px;
-            transition: all 0.3s ease;
-        }
-        
-        .log-entry::before {
-            content: '>';
-            position: absolute;
-            left: 0;
-            color: #8b5cf6;
-            font-weight: bold;
-        }
-        
-        .log-entry:hover {
-            background: rgba(99, 102, 241, 0.05);
-            border-radius: 6px;
-            padding-left: 25px;
-        }
-        
+
         .log-entry:last-child {
             border-bottom: none;
         }
-        
+
         .log-timestamp {
-            color: #a3b0c8;
-            display: inline-block;
-            width: 200px;
+            color: var(--text-secondary);
+            margin-right: 15px;
+            min-width: 180px;
         }
-        
+
         .log-ip {
-            color: #76b3f7;
-            font-weight: 600;
+            color: #bb86fc;
+            margin-right: 15px;
+            min-width: 150px;
         }
-        
-        .log-request {
-            color: #e2e8f0;
-            font-family: 'Consolas', monospace;
+
+        .log-method {
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 10px;
+            font-weight: bold;
+            background-color: rgba(255, 255, 255, 0.1);
         }
-        
-        .log-status-ok {
-            color: #34d399;
-            font-weight: 700;
-            text-shadow: 0 0 5px rgba(52, 211, 153, 0.2);
+
+        .log-path {
+            color: #64ffda;
+            margin-right: 10px;
         }
-        
-        .log-status-error {
-            color: #f87171;
-            font-weight: 700;
-            text-shadow: 0 0 5px rgba(248, 113, 113, 0.2);
+
+        .log-status {
+            font-weight: bold;
+            margin-left: 10px;
         }
-        
-        /* Scrollbar styling */
-        .logs-container::-webkit-scrollbar {
-            width: 12px;
+
+        .status-200 {
+            color: var(--success-color);
         }
-        
-        .logs-container::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.6);
-            border-radius: 6px;
+
+        .status-404, .status-500, .status-401 {
+            color: var(--error-color);
         }
-        
-        .logs-container::-webkit-scrollbar-thumb {
-            background: linear-gradient(to bottom, #6366f1, #8b5cf6);
-            border-radius: 6px;
-            border: 3px solid rgba(15, 23, 42, 0.8);
-            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
-        }
-        
-        .logs-container::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(to bottom, #8183f4, #9d77f7);
-        }
-        
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 30px 0 20px;
-            color: #94a3b8;
-            font-size: 15px;
-            margin-top: 40px;
-            border-top: 1px solid rgba(99, 102, 241, 0.2);
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .status-indicators {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .indicator {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 14px;
-        }
-        
-        .indicator-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-        
-        .online {
-            background: linear-gradient(135deg, #34d399, #10b981);
-            box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
-        }
-        
-        .offline {
-            background: linear-gradient(135deg, #f87171, #ef4444);
-            box-shadow: 0 0 8px rgba(248, 113, 113, 0.3);
-        }
-        
-        /* Background particles */
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-        }
-        
-        .particle {
-            position: absolute;
-            border-radius: 50%;
-            animation: float 15s infinite linear;
-        }
-        
-        @keyframes float {
-            0% {
-                transform: translateY(0) translateX(0) rotate(0deg);
-                opacity: 0;
-                box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 0.7;
-            }
-            100% {
-                transform: translateY(-1000px) translateX(1000px) rotate(720deg);
-                opacity: 0;
-                box-shadow: 0 0 20px rgba(99, 102, 241, 0.8);
-            }
-        }
-        
+
         /* Responsive */
-        @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 80px;
             }
-            
-            header {
+            .sidebar-title, .menu-button span {
+                display: none;
+            }
+            .menu-button {
+                justify-content: center;
+                padding: 20px 0;
+            }
+            .menu-button i {
+                margin-right: 0;
+                font-size: 1.4rem;
+            }
+            .main-content {
+                margin-left: 80px;
+                padding: 30px 20px;
+            }
+            .main-title {
+                font-size: 2.2rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                padding: 0;
+                bottom: 0;
+                top: auto;
+                box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
+            }
+            .sidebar-title {
+                display: none;
+            }
+            .menu-buttons {
+                flex-direction: row;
+                width: 100%;
+                padding: 0;
+            }
+            .menu-button {
+                flex: 1;
                 flex-direction: column;
-                gap: 20px;
+                padding: 15px 5px;
+                font-size: 0.8rem;
             }
-            
-            .logs-container {
-                padding: 18px;
+            .menu-button i {
+                margin-bottom: 5px;
+                margin-right: 0;
+                font-size: 1.2rem;
             }
-            
-            .log-timestamp {
-                width: auto;
-                display: block;
+            .main-content {
+                margin-left: 0;
+                margin-bottom: 70px;
+                padding: 25px 15px;
+            }
+            .main-title {
+                font-size: 1.8rem;
+            }
+            .interval-section {
+                padding: 20px;
+            }
+            .logs-header {
+                padding: 15px 20px;
+            }
+            .logs-content {
+                padding: 15px 20px;
+                font-size: 0.85rem;
+            }
+            .log-entry {
+                flex-wrap: wrap;
+            }
+            .log-timestamp, .log-ip {
+                min-width: 100%;
                 margin-bottom: 5px;
             }
-            
-            footer {
-                flex-direction: column;
-                gap: 15px;
-            }
+        }
+
+        /* Scrollbar personalizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #1565c0;
         }
     </style>
 </head>
 <body>
-    <!-- Fondo de cuadrícula -->
-    <div class="grid-bg"></div>
-    
-    <!-- Background particles -->
-    <div class="particles" id="particles"></div>
-    
-    <div class="container">
-        <header>
-            <div class="logo">
-                <div class="logo-icon">
-                    <i class="fas fa-brain"></i>
-                </div>
-                <div class="logo-text">GEMA AI SIGNALS</div>
-            </div>
-            <button class="download-btn">
-                <i class="fas fa-download"></i>
-                Download ARK
+    <!-- Menú lateral -->
+    <div class="sidebar">
+        <div class="sidebar-title">GEMA AI SIGNALS</div>
+        <div class="menu-buttons">
+            <button class="menu-button active">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
             </button>
-        </header>
-        
-        <div class="dashboard">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">
-                        <i class="fas fa-home"></i>
-                        Home
-                    </div>
-                </div>
-                <div class="card-content">
-                    <div class="home-placeholder">
-                        <i class="fas fa-chart-network"></i>
-                        <div>AI-Powered System Dashboard<br><small>Real-time analytics coming soon</small></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title">
-                        <i class="fas fa-signal"></i>
-                        Gema AI Signals
-                    </div>
-                </div>
-                <div class="card-content">
-                    <div class="interval-control">
-                        <select class="interval-select">
-                            <option>Time Interval</option>
-                            <option>5 seconds</option>
-                            <option>10 seconds</option>
-                            <option>30 seconds</option>
-                            <option>1 minute</option>
-                            <option>5 minutes</option>
-                            <option>Custom...</option>
-                        </select>
-                        <button class="save-btn">
-                            <i class="fas fa-save"></i>
-                            Save Interval
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <button class="menu-button">
+                <i class="fas fa-download"></i>
+                <span>Download APK</span>
+            </button>
         </div>
-        
-        <div class="logs-section">
-            <div class="logs-header">
-                <div class="logs-title">
-                    <i class="fas fa-server"></i>
-                    Logs Bridge
-                </div>
-            </div>
-            <div class="logs-container">
-                <div class="log-entry">
-                    <span class="log-timestamp">INFO: 2023-10-27 10:30:00</span> - 
-                    <span class="log-ip">35.230.74.10:0</span> - 
-                    <span class="log-request">"GET / HTTP/1.1"</span> 
-                    <span class="log-status-ok">200 OK</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">INFO: 2023-10-27 10:30:05</span> - 
-                    <span class="log-ip">23.88.105.37:0</span> - 
-                    <span class="log-request">"GET / HTTP/1.1"</span> 
-                    <span class="log-status-ok">200 OK</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">INFO: 2023-10-27 10:30:10</span> - 
-                    <span class="log-ip">172.96.140.59:0</span> - 
-                    <span class="log-request">"POST / full_signal HTTP/1.1"</span> 
-                    <span class="log-status-ok">200 OK</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">INFO: 2023-10-27 10:30:15</span> - 
-                    <span class="log-ip">192.168.11:0</span> - 
-                    <span class="log-request">"GET / status HTTP/1.1"</span> 
-                    <span class="log-status-error">404 ERROR</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">INFO: 2023-10-27 10:30:20</span> - 
-                    <span class="log-ip">10.0.0.5:0</span> - 
-                    <span class="log-request">"POST / data HTTP/1.1"</span> 
-                    <span class="log-status-error">500 ERROR</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">INFO: 2023-10-27 10:30:25</span> - 
-                    <span class="log-ip">172.16.0.10:0</span> - 
-                    <span class="log-request">"GET / health HTTP/1.1"</span> 
-                    <span class="log-status-ok">200 OK</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">INFO: 2023-10-27 10:30:30</span> - 
-                    <span class="log-ip">45.33.64.1:0</span> - 
-                    <span class="log-request">"GET / metrics HTTP/1.1"</span> 
-                    <span class="log-status-ok">200 OK</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">INFO: 2023-10-27 10:30:35</span> - 
-                    <span class="log-ip">8.8.8.8:0</span> - 
-                    <span class="log-request">"GET / config HTTP/1.1"</span> 
-                    <span class="log-status-error">401 ERROR</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">INFO: 2023-10-27 10:30:40</span> - 
-                    <span class="log-ip">142.250.185.174:0</span> - 
-                    <span class="log-request">"GET / analytics HTTP/1.1"</span> 
-                    <span class="log-status-ok">200 OK</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">INFO: 2023-10-27 10:30:45</span> - 
-                    <span class="log-ip">104.16.249.249:0</span> - 
-                    <span class="log-request">"POST / update HTTP/1.1"</span> 
-                    <span class="log-status-ok">200 OK</span>
-                </div>
-            </div>
-        </div>
-        
-        <footer>
-            <div>GEMA AI SIGNALS &copy; 2023 | Advanced Neural Network Monitoring</div>
-            <div class="status-indicators">
-                <div class="indicator">
-                    <div class="indicator-dot online"></div>
-                    <span>AI Core: Online</span>
-                </div>
-                <div class="indicator">
-                    <div class="indicator-dot online"></div>
-                    <span>Data Bridge: Online</span>
-                </div>
-            </div>
-        </footer>
     </div>
-    
+
+    <!-- Contenido principal -->
+    <div class="main-content">
+        <div class="main-header">
+            <h1 class="main-title">Gema AI Signals</h1>
+            <p class="main-subtitle">Advanced AI-driven market signals and analytics platform for professional traders</p>
+        </div>
+
+        <!-- Sección de intervalo -->
+        <div class="interval-section">
+            <div class="input-group">
+                <label class="input-label">Time Interval (in minutes)</label>
+                <input type="text" class="interval-input" placeholder="Time Interval">
+            </div>
+            <button class="save-button">Save Interval</button>
+        </div>
+
+        <!-- Bloque de logs -->
+        <div class="logs-container">
+            <div class="logs-header">Logs Bridge</div>
+            <div class="logs-content">
+                <div class="log-entry">
+                    <span class="log-timestamp">2023-10-27 10:30:00</span>
+                    <span class="log-ip">35.230.74.10:0</span>
+                    <span class="log-method">GET</span>
+                    <span class="log-path">/</span>
+                    <span class="log-status status-200">200 OK</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">2023-10-27 10:30:05</span>
+                    <span class="log-ip">23.88.105.37:0</span>
+                    <span class="log-method">GET</span>
+                    <span class="log-path">/</span>
+                    <span class="log-status status-200">200 OK</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">2023-10-27 10:30:10</span>
+                    <span class="log-ip">172.96.140.59:0</span>
+                    <span class="log-method">POST</span>
+                    <span class="log-path">/full_signal</span>
+                    <span class="log-status status-200">200 OK</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">2023-10-27 10:30:15</span>
+                    <span class="log-ip">192.168.11:0</span>
+                    <span class="log-method">GET</span>
+                    <span class="log-path">/status</span>
+                    <span class="log-status status-404">404 ERROR</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">2023-10-27 10:30:20</span>
+                    <span class="log-ip">10.0.0.5:0</span>
+                    <span class="log-method">POST</span>
+                    <span class="log-path">/data</span>
+                    <span class="log-status status-500">500 ERROR</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">2023-10-27 10:30:25</span>
+                    <span class="log-ip">172.16.0.10:0</span>
+                    <span class="log-method">GET</span>
+                    <span class="log-path">/health</span>
+                    <span class="log-status status-200">200 OK</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">2023-10-27 10:30:30</span>
+                    <span class="log-ip">45.33.64.1:0</span>
+                    <span class="log-method">GET</span>
+                    <span class="log-path">/metrics</span>
+                    <span class="log-status status-200">200 OK</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">2023-10-27 10:30:35</span>
+                    <span class="log-ip">8.8.8.8:0</span>
+                    <span class="log-method">GET</span>
+                    <span class="log-path">/config</span>
+                    <span class="log-status status-401">401 ERROR</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">2023-10-27 10:30:40</span>
+                    <span class="log-ip">104.16.249.249:0</span>
+                    <span class="log-method">POST</span>
+                    <span class="log-path">/predict</span>
+                    <span class="log-status status-200">200 OK</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">2023-10-27 10:30:45</span>
+                    <span class="log-ip">172.217.16.14:0</span>
+                    <span class="log-method">GET</span>
+                    <span class="log-path">/analytics</span>
+                    <span class="log-status status-200">200 OK</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">2023-10-27 10:30:50</span>
+                    <span class="log-ip">192.168.1.15:0</span>
+                    <span class="log-method">POST</span>
+                    <span class="log-path">/update</span>
+                    <span class="log-status status-403">403 ERROR</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Create background particles
-        document.addEventListener('DOMContentLoaded', function() {
-            const particlesContainer = document.getElementById('particles');
-            const particleCount = 30;
-            const colors = ['#8b5cf6', '#6366f1', '#3b82f6', '#10b981'];
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                
-                // Random size
-                const size = Math.random() * 100 + 30;
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                
-                // Random position
-                particle.style.left = `${Math.random() * 100}%`;
-                particle.style.top = `${Math.random() * 100}%`;
-                
-                // Random animation duration
-                const duration = Math.random() * 25 + 20;
-                particle.style.animationDuration = `${duration}s`;
-                
-                // Random animation delay
-                const delay = Math.random() * 5;
-                particle.style.animationDelay = `${delay}s`;
-                
-                // Random color
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                particle.style.background = `radial-gradient(circle, ${color}, transparent)`;
-                
-                particlesContainer.appendChild(particle);
-            }
-            
-            // Add floating effect to cards on load
-            const cards = document.querySelectorAll('.card');
-            cards.forEach((card, index) => {
-                setTimeout(() => {
-                    card.style.transform = 'translateY(20px)';
-                    card.style.opacity = '0';
-                    
-                    setTimeout(() => {
-                        card.style.transition = 'transform 0.8s ease, opacity 0.8s ease, box-shadow 0.3s ease';
-                        card.style.transform = 'translateY(0)';
-                        card.style.opacity = '1';
-                    }, 100);
-                }, index * 150);
+        // Animación para botones del menú
+        const menuButtons = document.querySelectorAll('.menu-button');
+        menuButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                menuButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
             });
+        });
+        
+        // Animación para el botón de guardar
+        const saveButton = document.querySelector('.save-button');
+        saveButton.addEventListener('click', function() {
+            const intervalInput = document.querySelector('.interval-input');
+            if (intervalInput.value) {
+                this.textContent = 'Interval Saved!';
+                this.style.backgroundColor = '#4CAF50';
+                
+                setTimeout(() => {
+                    this.textContent = 'Save Interval';
+                    this.style.backgroundColor = '';
+                }, 2000);
+            } else {
+                intervalInput.placeholder = 'Please enter a value';
+                intervalInput.style.borderColor = '#f44336';
+                
+                setTimeout(() => {
+                    intervalInput.placeholder = 'Time Interval';
+                    intervalInput.style.borderColor = '';
+                }, 2000);
+            }
         });
     </script>
 </body>
