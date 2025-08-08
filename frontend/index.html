@@ -14,10 +14,11 @@
         }
         
         body {
-            background: linear-gradient(135deg, #0f172a, #1e293b);
+            background: linear-gradient(135deg, #0c1120, #1a2439);
             color: #e2e8f0;
             min-height: 100vh;
-            padding: 20px;
+            padding: 25px;
+            overflow-x: hidden;
         }
         
         .container {
@@ -30,137 +31,199 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 0;
-            border-bottom: 1px solid #334155;
-            margin-bottom: 30px;
+            padding: 15px 0;
+            border-bottom: 1px solid #2a364d;
+            margin-bottom: 25px;
         }
         
         .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
         
         .logo-icon {
             background: linear-gradient(135deg, #8b5cf6, #6366f1);
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 22px;
+            box-shadow: 0 4px 6px rgba(99, 102, 241, 0.3);
         }
         
         .logo-text {
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            background: linear-gradient(to right, #e2e8f0, #94a3b8);
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            background: linear-gradient(to right, #e0e7ff, #c7d2fe);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
         }
         
         .download-btn {
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 11px 22px;
             border-radius: 8px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 6px rgba(5, 150, 105, 0.3);
+            gap: 9px;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 6px rgba(5, 150, 105, 0.4);
+            font-size: 15px;
         }
         
         .download-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(5, 150, 105, 0.4);
+            box-shadow: 0 6px 10px rgba(5, 150, 105, 0.5);
+            background: linear-gradient(135deg, #0da271, #048055);
+        }
+        
+        .download-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(5, 150, 105, 0.4);
         }
         
         /* Main Content */
         .dashboard {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 25px;
+            gap: 28px;
             margin-bottom: 30px;
         }
         
         .card {
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            backdrop-filter: blur(10px);
+            background: rgba(26, 36, 57, 0.85);
+            border: 1px solid #2a364d;
+            border-radius: 14px;
+            padding: 26px;
+            box-shadow: 0 12px 18px -6px rgba(0, 0, 0, 0.25), 
+                        0 4px 8px -4px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(12px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+        
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 24px -8px rgba(0, 0, 0, 0.3), 
+                        0 6px 12px -4px rgba(0, 0, 0, 0.2);
         }
         
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
+            margin-bottom: 26px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #334155;
         }
         
         .card-title {
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 19px;
+            font-weight: 700;
             color: #94a3b8;
+            letter-spacing: 0.3px;
         }
         
         .card-content {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 18px;
         }
         
         .interval-control {
             display: flex;
-            gap: 15px;
+            gap: 16px;
             align-items: center;
         }
         
         .interval-select {
             flex: 1;
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid #475569;
-            border-radius: 8px;
-            padding: 12px 15px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #3c4a6b;
+            border-radius: 9px;
+            padding: 13px 16px;
             color: #e2e8f0;
-            font-size: 14px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        
+        .interval-select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
         
         .save-btn {
             background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: 600;
+            padding: 13px 22px;
+            border-radius: 9px;
+            font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+            gap: 9px;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.4);
+            font-size: 15px;
         }
         
         .save-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 6px 10px rgba(37, 99, 235, 0.5);
+            background: linear-gradient(135deg, #3274d9, #1d55c2);
+        }
+        
+        .save-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.4);
+        }
+        
+        /* Home Card Placeholder */
+        .home-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 180px;
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 10px;
+            border: 1px dashed #3c4a6b;
+            color: #94a3b8;
+        }
+        
+        .home-placeholder i {
+            font-size: 40px;
+            margin-bottom: 15px;
+            opacity: 0.6;
         }
         
         /* Logs Section */
         .logs-section {
-            background: rgba(30, 41, 59, 0.7);
-            border: 1px solid #334155;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            backdrop-filter: blur(10px);
+            background: rgba(26, 36, 57, 0.85);
+            border: 1px solid #2a364d;
+            border-radius: 14px;
+            padding: 26px;
+            box-shadow: 0 12px 18px -6px rgba(0, 0, 0, 0.25), 
+                        0 4px 8px -4px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(12px);
+            transition: transform 0.3s ease;
+        }
+        
+        .logs-section:hover {
+            transform: translateY(-2px);
         }
         
         .logs-header {
@@ -168,28 +231,32 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #334155;
         }
         
         .logs-title {
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 19px;
+            font-weight: 700;
             color: #94a3b8;
+            letter-spacing: 0.3px;
         }
         
         .logs-container {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid #475569;
-            border-radius: 8px;
-            padding: 20px;
-            max-height: 350px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #3c4a6b;
+            border-radius: 10px;
+            padding: 22px;
+            max-height: 340px;
             overflow-y: auto;
         }
         
         .log-entry {
-            padding: 12px 0;
-            border-bottom: 1px solid #334155;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 14px;
+            padding: 14px 0;
+            border-bottom: 1px solid #2a364d;
+            font-family: 'Courier New', monospace;
+            font-size: 14.5px;
+            line-height: 1.5;
         }
         
         .log-entry:last-child {
@@ -197,66 +264,127 @@
         }
         
         .log-timestamp {
-            color: #94a3b8;
+            color: #a3b0c8;
             display: inline-block;
-            width: 180px;
+            width: 195px;
         }
         
         .log-ip {
-            color: #60a5fa;
+            color: #76b3f7;
+            font-weight: 500;
         }
         
         .log-request {
             color: #e2e8f0;
+            font-family: 'Consolas', monospace;
         }
         
         .log-status-ok {
             color: #34d399;
-            font-weight: 600;
+            font-weight: 700;
+            text-shadow: 0 0 5px rgba(52, 211, 153, 0.2);
         }
         
         .log-status-error {
             color: #f87171;
-            font-weight: 600;
+            font-weight: 700;
+            text-shadow: 0 0 5px rgba(248, 113, 113, 0.2);
         }
         
         /* Scrollbar styling */
         .logs-container::-webkit-scrollbar {
-            width: 8px;
+            width: 10px;
         }
         
         .logs-container::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.5);
-            border-radius: 4px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 5px;
         }
         
         .logs-container::-webkit-scrollbar-thumb {
-            background: #4f46e5;
-            border-radius: 4px;
+            background: linear-gradient(to bottom, #6366f1, #8b5cf6);
+            border-radius: 5px;
+            border: 2px solid rgba(15, 23, 42, 0.8);
         }
         
         .logs-container::-webkit-scrollbar-thumb:hover {
-            background: #6366f1;
+            background: linear-gradient(to bottom, #8183f4, #9d77f7);
         }
         
         /* Footer */
         footer {
             text-align: center;
-            padding: 20px;
+            padding: 25px 0 15px;
             color: #64748b;
-            font-size: 14px;
+            font-size: 14.5px;
             margin-top: 30px;
-            border-top: 1px solid #334155;
+            border-top: 1px solid #2a364d;
+            font-weight: 500;
+            letter-spacing: 0.3px;
         }
         
+        /* Background particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.15);
+            animation: float 15s infinite linear;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(-1000px) translateX(1000px) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Responsive */
         @media (max-width: 768px) {
             .dashboard {
                 grid-template-columns: 1fr;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .logs-container {
+                padding: 15px;
+            }
+            
+            .log-timestamp {
+                width: auto;
+                display: block;
+                margin-bottom: 5px;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Background particles -->
+    <div class="particles" id="particles"></div>
+    
     <div class="container">
         <header>
             <div class="logo">
@@ -277,7 +405,10 @@
                     <div class="card-title">Home</div>
                 </div>
                 <div class="card-content">
-                    <!-- Home content would go here -->
+                    <div class="home-placeholder">
+                        <i class="fas fa-chart-network"></i>
+                        <div>System Dashboard - Coming Soon</div>
+                    </div>
                 </div>
             </div>
             
@@ -363,5 +494,37 @@
             GEMA AI SIGNALS &copy; 2023 | Advanced AI Monitoring System
         </footer>
     </div>
+    
+    <script>
+        // Create background particles
+        document.addEventListener('DOMContentLoaded', function() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 25;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random size
+                const size = Math.random() * 80 + 20;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Random position
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                // Random animation duration
+                const duration = Math.random() * 20 + 15;
+                particle.style.animationDuration = `${duration}s`;
+                
+                // Random animation delay
+                const delay = Math.random() * 5;
+                particle.style.animationDelay = `${delay}s`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        });
+    </script>
 </body>
 </html>
