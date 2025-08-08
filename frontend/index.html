@@ -1,90 +1,367 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gema AI Signals</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEMA AI SIGNALS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #334155;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: linear-gradient(to right, #e2e8f0, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(5, 150, 105, 0.3);
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(5, 150, 105, 0.4);
+        }
+        
+        /* Main Content */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(10px);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+        
+        .card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .interval-control {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .interval-select {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+        
+        .save-btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+        }
+        
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(37, 99, 235, 0.4);
+        }
+        
+        /* Logs Section */
+        .logs-section {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(10px);
+        }
+        
+        .logs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .logs-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+        
+        .logs-container {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 20px;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            padding: 12px 0;
+            border-bottom: 1px solid #334155;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .log-timestamp {
+            color: #94a3b8;
+            display: inline-block;
+            width: 180px;
+        }
+        
+        .log-ip {
+            color: #60a5fa;
+        }
+        
+        .log-request {
+            color: #e2e8f0;
+        }
+        
+        .log-status-ok {
+            color: #34d399;
+            font-weight: 600;
+        }
+        
+        .log-status-error {
+            color: #f87171;
+            font-weight: 600;
+        }
+        
+        /* Scrollbar styling */
+        .logs-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .logs-container::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 4px;
+        }
+        
+        .logs-container::-webkit-scrollbar-thumb {
+            background: #4f46e5;
+            border-radius: 4px;
+        }
+        
+        .logs-container::-webkit-scrollbar-thumb:hover {
+            background: #6366f1;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 30px;
+            border-top: 1px solid #334155;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="layout">
-    <aside class="sidebar">
-      <div class="brand">GEMA AI SIGNALS</div>
-      <nav class="nav">
-        <a class="nav-item active" href="#">
-          <span class="nav-icon">🏠</span><span>Home</span>
-        </a>
-        <a class="nav-item" href="#" id="download-apk">
-          <span class="nav-icon">⬇️</span><span>Download APK</span>
-        </a>
-      </nav>
-    </aside>
-
-    <div class="divider"></div>
-
-    <main class="content">
-      <h1 class="title">Gema AI Signals</h1>
-
-      <section class="controls">
-        <input id="interval" class="pill-input" placeholder="Time Interval" />
-        <button class="pill-btn" id="save-btn">Save Interval</button>
-      </section>
-
-      <section class="card logs">
-        <h2 class="card-title">Logs Bridge</h2>
-
-        <!-- SOLO VISUAL: ejemplo de líneas -->
-        <ul class="log-list">
-          <li class="log-row">
-            <span class="log-tag">INFO:</span>
-            <span class="log-ts">2023-10-27 10:30:00 - 35.230.74.10:0 -</span>
-            <span class="log-msg">"GET / HTTP/1.1"</span>
-            <span class="log-status ok">200 OK</span>
-          </li>
-          <li class="log-row">
-            <span class="log-tag">INFO:</span>
-            <span class="log-ts">2023-10-27 10:30:05 - 23.88.105.37:0 -</span>
-            <span class="log-msg">"GET / HTTP/1.1"</span>
-            <span class="log-status ok">200 OK</span>
-          </li>
-          <li class="log-row">
-            <span class="log-tag">INFO:</span>
-            <span class="log-ts">2023-10-27 10:30:10 - 172.96.140.59:0 -</span>
-            <span class="log-msg">"POST /full_signal HTTP/1.1"</span>
-            <span class="log-status ok">200 OK</span>
-          </li>
-          <li class="log-row">
-            <span class="log-tag">INFO:</span>
-            <span class="log-ts">2023-10-27 10:30:15 - 192.168.1.10 -</span>
-            <span class="log-msg">"GET /status HTTP/1.1"</span>
-            <span class="log-status err">404 ERROR</span>
-          </li>
-          <li class="log-row">
-            <span class="log-tag">INFO:</span>
-            <span class="log-ts">2023-10-27 10:30:20 - 10.0.0.5:0 -</span>
-            <span class="log-msg">"POST /data HTTP/1.1"</span>
-            <span class="log-status err">500 ERROR</span>
-          </li>
-          <li class="log-row">
-            <span class="log-tag">INFO:</span>
-            <span class="log-ts">2023-10-27 10:30:25 - 172.16.0.10:0 -</span>
-            <span class="log-msg">"GET /health HTTP/1.1"</span>
-            <span class="log-status ok">200 OK</span>
-          </li>
-        </ul>
-      </section>
-    </main>
-  </div>
-
-  <script>
-    // Solo UI; conectaremos luego
-    document.getElementById('save-btn').addEventListener('click', () => {
-      const v = (document.getElementById('interval').value || '').trim() || '30min';
-      alert('Interval saved: ' + v);
-    });
-  </script>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div class="logo-text">GEMA AI SIGNALS</div>
+            </div>
+            <button class="download-btn">
+                <i class="fas fa-download"></i>
+                Download ARK
+            </button>
+        </header>
+        
+        <div class="dashboard">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Home</div>
+                </div>
+                <div class="card-content">
+                    <!-- Home content would go here -->
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Gema AI Signals</div>
+                </div>
+                <div class="card-content">
+                    <div class="interval-control">
+                        <select class="interval-select">
+                            <option>Time Interval</option>
+                            <option>5 seconds</option>
+                            <option>10 seconds</option>
+                            <option>30 seconds</option>
+                            <option>1 minute</option>
+                        </select>
+                        <button class="save-btn">
+                            <i class="fas fa-save"></i>
+                            Save Interval
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="logs-section">
+            <div class="logs-header">
+                <div class="logs-title">Logs Bridge</div>
+            </div>
+            <div class="logs-container">
+                <div class="log-entry">
+                    <span class="log-timestamp">INFO: 2023-10-27 10:30:00</span> - 
+                    <span class="log-ip">35.230.74.10:0</span> - 
+                    <span class="log-request">"GET / HTTP/1.1"</span> 
+                    <span class="log-status-ok">200 OK</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">INFO: 2023-10-27 10:30:05</span> - 
+                    <span class="log-ip">23.88.105.37:0</span> - 
+                    <span class="log-request">"GET / HTTP/1.1"</span> 
+                    <span class="log-status-ok">200 OK</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">INFO: 2023-10-27 10:30:10</span> - 
+                    <span class="log-ip">172.96.140.59:0</span> - 
+                    <span class="log-request">"POST / full_signal HTTP/1.1"</span> 
+                    <span class="log-status-ok">200 OK</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">INFO: 2023-10-27 10:30:15</span> - 
+                    <span class="log-ip">192.168.11:0</span> - 
+                    <span class="log-request">"GET / status HTTP/1.1"</span> 
+                    <span class="log-status-error">404 ERROR</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">INFO: 2023-10-27 10:30:20</span> - 
+                    <span class="log-ip">10.0.0.5:0</span> - 
+                    <span class="log-request">"POST / data HTTP/1.1"</span> 
+                    <span class="log-status-error">500 ERROR</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">INFO: 2023-10-27 10:30:25</span> - 
+                    <span class="log-ip">172.16.0.10:0</span> - 
+                    <span class="log-request">"GET / health HTTP/1.1"</span> 
+                    <span class="log-status-ok">200 OK</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">INFO: 2023-10-27 10:30:30</span> - 
+                    <span class="log-ip">45.33.64.1:0</span> - 
+                    <span class="log-request">"GET / metrics HTTP/1.1"</span> 
+                    <span class="log-status-ok">200 OK</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">INFO: 2023-10-27 10:30:35</span> - 
+                    <span class="log-ip">8.8.8.8:0</span> - 
+                    <span class="log-request">"GET / config HTTP/1.1"</span> 
+                    <span class="log-status-error">401 ERROR</span>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            GEMA AI SIGNALS &copy; 2023 | Advanced AI Monitoring System
+        </footer>
+    </div>
 </body>
-  </html>
+</html>
