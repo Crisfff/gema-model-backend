@@ -94,7 +94,7 @@ def update_price_exit_if_needed():
         if last:
             now = int(time.time())
             elapsed = now - last["timestamp"]
-            if elapsed >= 5 * 60:  # 5 minutos
+            if elapsed >= 30 * 60:  # 30 minutos
                 node_id = last["node_id"]
                 price_exit = get_btc_price()
                 dt_str = now_string()
