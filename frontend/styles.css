@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gema AI Signals</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">GEMA AI SIGNALS</div>
+      <nav class="nav">
+        <a class="nav-item active" href="#">
+          <span class="nav-icon">🏠</span>
+          <span>Home</span>
+        </a>
+        <a class="nav-item" href="#">
+          <span class="nav-icon">⬇️</span>
+          <span>Download APK</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="header">
+        <h1 class="title">Gema AI Signals</h1>
+      </header>
+
+      <!-- Card: Interval -->
+      <section class="card center">
+        <div class="interval-row">
+          <input id="intervalInput" class="interval-input" placeholder="Time Interval" />
+        </div>
+        <button id="saveBtn" class="btn primary">Save Interval</button>
+        <div id="msg" class="msg"></div>
+      </section>
+
+      <!-- Card: Logs -->
+      <section class="card logs-card">
+        <h2 class="logs-title">Logs Bridge</h2>
+        <ul id="logs" class="logs-list"></ul>
+      </section>
+
+      <footer class="footer"></footer>
+    </main>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
