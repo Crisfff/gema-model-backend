@@ -1,54 +1,75 @@
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gema AI Signals</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css" />
-</head>
-<body>
-  <div class="layout">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="brand">GEMA AI SIGNALS</div>
-      <nav class="nav">
-        <a class="nav-item active" href="#">
-          <span class="nav-icon">🏠</span>
-          <span>Home</span>
-        </a>
-        <a class="nav-item" href="#">
-          <span class="nav-icon">⬇️</span>
-          <span>Download APK</span>
-        </a>
-      </nav>
-    </aside>
+:root{
+  --bg:#0f141a; --bg-2:#121821; --card:#1a212b;
+  --text:#e8edf3; --muted:#9aa6b2; --accent:#6ea8fe;
+  --green:#46d369; --red:#ff5f5f; --border:#253041;
+  --shadow:0 10px 30px rgba(0,0,0,.35)
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial
+}
 
-    <!-- Main -->
-    <main class="main">
-      <header class="header">
-        <h1 class="title">Gema AI Signals</h1>
-      </header>
+/* Layout */
+.layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
 
-      <!-- Card: Interval -->
-      <section class="card center">
-        <div class="interval-row">
-          <input id="intervalInput" class="interval-input" placeholder="Time Interval" />
-        </div>
-        <button id="saveBtn" class="btn primary">Save Interval</button>
-        <div id="msg" class="msg"></div>
-      </section>
+/* Sidebar */
+.sidebar{
+  background:var(--bg-2);border-right:1px solid var(--border);padding:22px
+}
+.brand{font-weight:800;letter-spacing:.03em;color:var(--muted);margin-bottom:28px}
+.nav{display:flex;flex-direction:column;gap:12px}
+.nav-item{
+  display:flex;gap:12px;align-items:center;text-decoration:none;color:var(--text);
+  padding:12px 14px;border-radius:10px;background:transparent;border:1px solid transparent;transition:all .15s
+}
+.nav-item:hover{background:#0e141c;border-color:var(--border)}
+.nav-item.active{background:#0e141c;border-color:var(--border)}
+.nav-icon{width:18px;text-align:center;opacity:.9}
 
-      <!-- Card: Logs -->
-      <section class="card logs-card">
-        <h2 class="logs-title">Logs Bridge</h2>
-        <ul id="logs" class="logs-list"></ul>
-      </section>
+/* Main */
+.main{padding:32px 40px}
+.header{display:flex;justify-content:center;margin-bottom:24px}
+.title{margin:0;font-size:44px;font-weight:800;letter-spacing:.5px}
 
-      <footer class="footer"></footer>
-    </main>
-  </div>
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow)}
+.center{
+  max-width:640px;margin:0 auto;padding:22px 20px;
+  display:flex;flex-direction:column;align-items:center;gap:14px
+}
+.interval-row{width:100%}
+.interval-input{
+  width:100%;padding:14px 16px;border-radius:10px;background:#0f151d;color:var(--text);
+  border:1px solid var(--border);outline:none;font-size:15px
+}
+.interval-input::placeholder{color:var(--muted)}
+.btn{padding:12px 18px;border:none;border-radius:10px;font-weight:600;cursor:pointer;transition:transform .03s}
+.btn:active{transform:translateY(1px)}
+.primary{background:var(--accent);color:#0b0f14}
+.msg{font-size:13px;color:var(--muted);min-height:18px}
 
-  <script src="./app.js"></script>
-</body>
-</html>
+/* Logs */
+.logs-card{margin:34px auto 0;max-width:840px;padding:22px}
+.logs-title{margin:0 0 14px;font-size:24px}
+.logs-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.log-line{
+  display:grid;grid-template-columns:76px 250px 1fr 80px;gap:12px;
+  padding:10px 12px;border:1px solid var(--border);
+  background:#121821;border-radius:10px;align-items:center
+}
+.log-tag{color:var(--muted);font-weight:700}
+.log-time{color:#c7d1db;font-variant-numeric:tabular-nums}
+.log-msg{color:#c7d1db;opacity:.95}
+.log-status{text-align:right;font-weight:700}
+.ok{color:var(--green)}
+.err{color:var(--red)}
+
+.footer{height:60px}
+
+/* Responsive */
+@media (max-width:980px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{position:sticky;top:0;z-index:2}
+}
