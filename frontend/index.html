@@ -1,482 +1,170 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GEMA AI SIGNALS</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --bg-primary: #121212;
-            --bg-secondary: #1a1a1a;
-            --bg-accent: #2a2a2a;
-            --bg-menu: #0a0a0a;
-            --text-primary: #ffffff;
-            --text-secondary: #cccccc;
-            --accent-color: #1e88e5;
-            --success-color: #4CAF50;
-            --error-color: #f44336;
-            --border-radius: 8px;
-            --transition: all 0.3s ease;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            display: flex;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* Menú lateral */
-        .sidebar {
-            width: 260px;
-            background-color: var(--bg-menu);
-            padding: 30px 0;
-            height: 100vh;
-            position: fixed;
-            display: flex;
-            flex-direction: column;
-            z-index: 100;
-            transition: var(--transition);
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-        }
-
-        .sidebar-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 0 20px;
-            color: var(--text-primary);
-            letter-spacing: 1px;
-        }
-
-        .menu-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 0 20px;
-        }
-
-        .menu-button {
-            display: flex;
-            align-items: center;
-            padding: 14px 20px;
-            border-radius: var(--border-radius);
-            background-color: transparent;
-            color: var(--text-secondary);
-            border: none;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 1rem;
-            font-weight: 500;
-        }
-
-        .menu-button:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
-        }
-
-        .menu-button.active {
-            background-color: var(--bg-accent);
-            color: var(--text-primary);
-        }
-
-        .menu-button i {
-            margin-right: 12px;
-            font-size: 1.1rem;
-            width: 24px;
-            text-align: center;
-        }
-
-        /* Contenido principal */
-        .main-content {
-            flex: 1;
-            padding: 40px;
-            margin-left: 260px;
-            transition: var(--transition);
-        }
-
-        .main-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .main-title {
-            font-size: 2.8rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            background: linear-gradient(45deg, #1e88e5, #4fc3f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: 0.5px;
-        }
-
-        .main-subtitle {
-            color: var(--text-secondary);
-            font-size: 1.2rem;
-            max-width: 600px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-
-        /* Formulario de intervalo */
-        .interval-section {
-            background-color: var(--bg-secondary);
-            border-radius: var(--border-radius);
-            padding: 30px;
-            max-width: 500px;
-            margin: 0 auto 40px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 25px;
-        }
-
-        .input-label {
-            margin-bottom: 10px;
-            font-size: 1rem;
-            color: var(--text-secondary);
-        }
-
-        .interval-input {
-            padding: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--border-radius);
-            background-color: var(--bg-accent);
-            color: var(--text-primary);
-            font-size: 1rem;
-            transition: var(--transition);
-        }
-
-        .interval-input:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.2);
-        }
-
-        .save-button {
-            width: 100%;
-            padding: 16px;
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: var(--border-radius);
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            letter-spacing: 0.5px;
-        }
-
-        .save-button:hover {
-            background-color: #1976d2;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(30, 136, 229, 0.3);
-        }
-
-        /* Bloque de logs */
-        .logs-container {
-            background-color: var(--bg-secondary);
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .logs-header {
-            background-color: var(--bg-accent);
-            padding: 20px 30px;
-            font-size: 1.3rem;
-            font-weight: 600;
-        }
-
-        .logs-content {
-            padding: 25px 30px;
-            max-height: 450px;
-            overflow-y: auto;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.95rem;
-            line-height: 1.8;
-        }
-
-        .log-entry {
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
-        }
-
-        .log-entry:last-child {
-            border-bottom: none;
-        }
-
-        .log-timestamp {
-            color: var(--text-secondary);
-            margin-right: 15px;
-            min-width: 180px;
-        }
-
-        .log-ip {
-            color: #bb86fc;
-            margin-right: 15px;
-            min-width: 150px;
-        }
-
-        .log-method {
-            padding: 2px 8px;
-            border-radius: 4px;
-            margin-right: 10px;
-            font-weight: bold;
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .log-path {
-            color: #64ffda;
-            margin-right: 10px;
-        }
-
-        .log-status {
-            font-weight: bold;
-            margin-left: 10px;
-        }
-
-        .status-200 {
-            color: var(--success-color);
-        }
-
-        .status-404, .status-500, .status-401 {
-            color: var(--error-color);
-        }
-
-        /* Responsive */
-        @media (max-width: 900px) {
-            .sidebar {
-                width: 80px;
-            }
-            .sidebar-title, .menu-button span {
-                display: none;
-            }
-            .menu-button {
-                justify-content: center;
-                padding: 20px 0;
-            }
-            .menu-button i {
-                margin-right: 0;
-                font-size: 1.4rem;
-            }
-            .main-content {
-                margin-left: 80px;
-                padding: 30px 20px;
-            }
-            .main-title {
-                font-size: 2.2rem;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                flex-direction: row;
-                padding: 0;
-                bottom: 0;
-                top: auto;
-                box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
-            }
-            .sidebar-title {
-                display: none;
-            }
-            .menu-buttons {
-                flex-direction: row;
-                width: 100%;
-                padding: 0;
-            }
-            .menu-button {
-                flex: 1;
-                flex-direction: column;
-                padding: 15px 5px;
-                font-size: 0.8rem;
-            }
-            .menu-button i {
-                margin-bottom: 5px;
-                margin-right: 0;
-                font-size: 1.2rem;
-            }
-            .main-content {
-                margin-left: 0;
-                margin-bottom: 70px;
-                padding: 25px 15px;
-            }
-            .main-title {
-                font-size: 1.8rem;
-            }
-            .interval-section {
-                padding: 20px;
-            }
-            .logs-header {
-                padding: 15px 20px;
-            }
-            .logs-content {
-                padding: 15px 20px;
-                font-size: 0.85rem;
-            }
-            .log-entry {
-                flex-wrap: wrap;
-            }
-            .log-timestamp, .log-ip {
-                min-width: 100%;
-                margin-bottom: 5px;
-            }
-        }
-
-        /* Scrollbar personalizada */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--accent-color);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #1565c0;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GEMA AI SIGNALS</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root {
+      --bg-primary:#121212; --bg-secondary:#1a1a1a; --bg-accent:#2a2a2a; --bg-menu:#0a0a0a;
+      --text-primary:#fff; --text-secondary:#ccc; --accent-color:#1e88e5;
+      --success-color:#4CAF50; --error-color:#f44336; --border-radius:8px; --transition:.3s ease;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--bg-primary);color:var(--text-primary);display:flex;min-height:100vh;overflow-x:hidden}
+    .sidebar{width:260px;background:var(--bg-menu);padding:30px 0;height:100vh;position:fixed;display:flex;flex-direction:column;z-index:100;transition:var(--transition);box-shadow:0 0 20px rgba(0,0,0,.5)}
+    .sidebar-title{font-size:1.5rem;font-weight:600;text-align:center;margin-bottom:40px;padding:0 20px;color:var(--text-primary);letter-spacing:1px}
+    .menu-buttons{display:flex;flex-direction:column;gap:10px;padding:0 20px}
+    .menu-button{display:flex;align-items:center;padding:14px 20px;border-radius:var(--border-radius);background:transparent;color:var(--text-secondary);border:none;cursor:pointer;transition:var(--transition);font-size:1rem;font-weight:500}
+    .menu-button:hover{background:rgba(255,255,255,.05);color:var(--text-primary)}
+    .menu-button.active{background:var(--bg-accent);color:var(--text-primary)}
+    .menu-button i{margin-right:12px;font-size:1.1rem;width:24px;text-align:center}
+    .main-content{flex:1;padding:40px;margin-left:260px;transition:var(--transition)}
+    .main-header{text-align:center;margin-bottom:40px}
+    .main-title{font-size:2.8rem;font-weight:700;margin-bottom:15px;background:linear-gradient(45deg,#1e88e5,#4fc3f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:.5px}
+    .main-subtitle{color:var(--text-secondary);font-size:1.2rem;max-width:600px;margin:0 auto;line-height:1.6}
+    .interval-section{background:var(--bg-secondary);border-radius:var(--border-radius);padding:30px;max-width:500px;margin:0 auto 40px;box-shadow:0 5px 15px rgba(0,0,0,.3)}
+    .input-group{display:flex;flex-direction:column;margin-bottom:25px}
+    .input-label{margin-bottom:10px;font-size:1rem;color:var(--text-secondary)}
+    .interval-input{padding:16px;border:1px solid rgba(255,255,255,.1);border-radius:var(--border-radius);background:var(--bg-accent);color:var(--text-primary);font-size:1rem;transition:var(--transition)}
+    .interval-input:focus{outline:none;border-color:var(--accent-color);box-shadow:0 0 0 3px rgba(30,136,229,.2)}
+    .save-button{width:100%;padding:16px;background:var(--accent-color);color:#fff;border:none;border-radius:var(--border-radius);font-size:1.1rem;font-weight:600;cursor:pointer;transition:var(--transition);letter-spacing:.5px}
+    .save-button:hover{background:#1976d2;transform:translateY(-2px);box-shadow:0 5px 15px rgba(30,136,229,.3)}
+    .logs-container{background:var(--bg-secondary);border-radius:var(--border-radius);overflow:hidden;box-shadow:0 5px 15px rgba(0,0,0,.3);max-width:1000px;margin:0 auto}
+    .logs-header{background:var(--bg-accent);padding:20px 30px;font-size:1.3rem;font-weight:600}
+    .logs-content{padding:25px 30px;max-height:450px;overflow-y:auto;font-family:'Courier New',Courier,monospace;font-size:.95rem;line-height:1.8}
+    .log-entry{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center}
+    .log-entry:last-child{border-bottom:none}
+    .log-timestamp{color:var(--text-secondary);margin-right:15px;min-width:180px}
+    .log-ip{color:#bb86fc;margin-right:15px;min-width:150px}
+    .log-method{padding:2px 8px;border-radius:4px;margin-right:10px;font-weight:bold;background:rgba(255,255,255,.1)}
+    .log-path{color:#64ffda;margin-right:10px}
+    .log-status{font-weight:bold;margin-left:10px}
+    .status-200{color:var(--success-color)}
+    .status-404,.status-500,.status-401{color:var(--error-color)}
+    @media (max-width:900px){
+      .sidebar{width:80px}
+      .sidebar-title,.menu-button span{display:none}
+      .menu-button{justify-content:center;padding:20px 0}
+      .menu-button i{margin-right:0;font-size:1.4rem}
+      .main-content{margin-left:80px;padding:30px 20px}
+      .main-title{font-size:2.2rem}
+    }
+    @media (max-width:600px){
+      .sidebar{width:100%;height:auto;flex-direction:row;padding:0;bottom:0;top:auto;box-shadow:0 -5px 15px rgba(0,0,0,.3)}
+      .sidebar-title{display:none}
+      .menu-buttons{flex-direction:row;width:100%;padding:0}
+      .menu-button{flex:1;flex-direction:column;padding:15px 5px;font-size:.8rem}
+      .menu-button i{margin-bottom:5px;margin-right:0;font-size:1.2rem}
+      .main-content{margin-left:0;margin-bottom:70px;padding:25px 15px}
+      .main-title{font-size:1.8rem}
+      .interval-section{padding:20px}
+      .logs-header{padding:15px 20px}
+      .logs-content{padding:15px 20px;font-size:.85rem}
+      .log-entry{flex-wrap:wrap}
+      .log-timestamp,.log-ip{min-width:100%;margin-bottom:5px}
+    }
+    ::-webkit-scrollbar{width:8px}
+    ::-webkit-scrollbar-track{background:rgba(255,255,255,.05);border-radius:4px}
+    ::-webkit-scrollbar-thumb{background:var(--accent-color);border-radius:4px}
+    ::-webkit-scrollbar-thumb:hover{background:#1565c0}
+  </style>
 </head>
 <body>
-    <!-- Menú lateral -->
-    <div class="sidebar">
-        <div class="sidebar-title">GEMA AI SIGNALS</div>
-        <div class="menu-buttons">
-            <button class="menu-button active">
-                <i class="fas fa-home"></i>
-                <span>Home</span>
-            </button>
-            <button class="menu-button">
-                <i class="fas fa-download"></i>
-                <span>Download APK</span>
-            </button>
-        </div>
+  <div class="sidebar">
+    <div class="sidebar-title">GEMA AI SIGNALS</div>
+    <div class="menu-buttons">
+      <button class="menu-button active"><i class="fas fa-home"></i><span>Home</span></button>
+      <button class="menu-button"><i class="fas fa-download"></i><span>Download APK</span></button>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="main-header">
+      <h1 class="main-title">Gema AI Signals</h1>
+      <p class="main-subtitle">Advanced AI-driven market signals and analytics platform for professional traders</p>
     </div>
 
-    <!-- Contenido principal -->
-    <div class="main-content">
-        <div class="main-header">
-            <h1 class="main-title">Gema AI Signals</h1>
-            <p class="main-subtitle">Advanced AI-driven market signals and analytics platform for professional traders</p>
-        </div>
+    <div class="interval-section">
+      <div class="input-group">
+        <label class="input-label">Time Interval (in minutes)</label>
+        <input type="text" class="interval-input" placeholder="Time Interval">
+      </div>
+      <button class="save-button">Save Interval</button>
+    </div>
 
-        <!-- Sección de intervalo -->
-        <div class="interval-section">
-            <div class="input-group">
-                <label class="input-label">Time Interval (in minutes)</label>
-                <input type="text" class="interval-input" placeholder="Time Interval">
-            </div>
-            <button class="save-button">Save Interval</button>
-        </div>
-
-        <!-- Bloque de logs -->
-       
-<div class="logs-container">
-  <div class="logs-header">Logs Bridge</div>
-  <div id="logs" class="logs-content">
-    <!-- Aquí se pintan los logs reales -->
-    <div class="log-entry"><span class="log-timestamp">Cargando logs…</span></div>
+    <div class="logs-container">
+      <div class="logs-header">Logs Bridge</div>
+      <div id="logs" class="logs-content">
+        <div class="log-entry"><span class="log-timestamp">Cargando logs…</span></div>
+      </div>
+    </div>
   </div>
-</div>
 
-<script>
-  function statusClass(code){
-    if (code >= 200 && code < 300) return 'status-200';
-    if (code >= 400 && code < 500) return 'status-404';
-    if (code >= 500) return 'status-500';
-    return '';
-  }
-
-  async function loadLogs(){
-    try{
-      const res = await fetch('/logs');
-      const data = await res.json();
-
-      const cont = document.getElementById('logs');
-      cont.innerHTML = '';
-
-      if (!Array.isArray(data) || data.length === 0){
-        cont.innerHTML = '<div class="log-entry"><span class="log-timestamp">Sin logs aún</span></div>';
-        return;
-      }
-
-      // Últimos primero
-      [...data].reverse().forEach(l => {
-        const row = document.createElement('div');
-        row.className = 'log-entry';
-        row.innerHTML = 
-          <span class="log-timestamp">${l.timestamp || ''}</span>
-          <span class="log-ip">${l.ip || ''}</span>
-          <span class="log-method">${l.method || ''}</span>
-          <span class="log-path">${l.path || ''}</span>
-          <span class="log-status ${statusClass(l.status)}">${l.status || ''}</span>
-        ;
-        cont.appendChild(row);
+  <script>
+    // Menú activo
+    const menuButtons = document.querySelectorAll('.menu-button');
+    menuButtons.forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        menuButtons.forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
       });
-    }catch(e){
-      console.error(e);
-    }
-  }
+    });
 
-  loadLogs();
-  setInterval(loadLogs, 3000); // refresca cada 3s
-    <script>
-        // Animación para botones del menú
-        const menuButtons = document.querySelectorAll('.menu-button');
-        menuButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                menuButtons.forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
-            });
+    // Botón "Save Interval" (solo visual por ahora)
+    const saveButton = document.querySelector('.save-button');
+    saveButton.addEventListener('click', function(){
+      const intervalInput = document.querySelector('.interval-input');
+      if(intervalInput.value){
+        this.textContent = 'Interval Saved!';
+        this.style.backgroundColor = '#4CAF50';
+        setTimeout(()=>{ this.textContent='Save Interval'; this.style.backgroundColor=''; }, 2000);
+      }else{
+        intervalInput.placeholder = 'Please enter a value';
+        intervalInput.style.borderColor = '#f44336';
+        setTimeout(()=>{ intervalInput.placeholder='Time Interval'; intervalInput.style.borderColor=''; }, 2000);
+      }
+    });
+
+    // ---- Logs en vivo ----
+    function statusClass(code){
+      if (code >= 200 && code < 300) return 'status-200';
+      if (code >= 400 && code < 500) return 'status-404';
+      if (code >= 500) return 'status-500';
+      return '';
+    }
+
+    async function loadLogs(){
+      try{
+        const res = await fetch('/logs');
+        const data = await res.json();
+        const cont = document.getElementById('logs');
+        cont.innerHTML = '';
+
+        if (!Array.isArray(data) || data.length === 0){
+          cont.innerHTML = '<div class="log-entry"><span class="log-timestamp">Sin logs aún</span></div>';
+          return;
+        }
+        // Mostrar últimos primero
+        [...data].reverse().forEach(l=>{
+          const row = document.createElement('div');
+          row.className = 'log-entry';
+          row.innerHTML = `
+            <span class="log-timestamp">${l.timestamp || ''}</span>
+            <span class="log-ip">${l.ip || ''}</span>
+            <span class="log-method">${l.method || ''}</span>
+            <span class="log-path">${l.path || ''}</span>
+            <span class="log-status ${statusClass(l.status)}">${l.status || ''}</span>
+          `;
+          cont.appendChild(row);
         });
-        
-        // Animación para el botón de guardar
-        const saveButton = document.querySelector('.save-button');
-        saveButton.addEventListener('click', function() {
-            const intervalInput = document.querySelector('.interval-input');
-            if (intervalInput.value) {
-                this.textContent = 'Interval Saved!';
-                this.style.backgroundColor = '#4CAF50';
-                
-                setTimeout(() => {
-                    this.textContent = 'Save Interval';
-                    this.style.backgroundColor = '';
-                }, 2000);
-            } else {
-                intervalInput.placeholder = 'Please enter a value';
-                intervalInput.style.borderColor = '#f44336';
-                
-                setTimeout(() => {
-                    intervalInput.placeholder = 'Time Interval';
-                    intervalInput.style.borderColor = '';
-                }, 2000);
-            }
-        });
-    </script>
+      }catch(e){
+        console.error(e);
+      }
+    }
+    loadLogs();
+    setInterval(loadLogs, 3000);
+  </script>
 </body>
 </html>
