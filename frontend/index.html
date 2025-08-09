@@ -395,90 +395,56 @@
         </div>
 
         <!-- Bloque de logs -->
-        <div class="logs-container">
-            <div class="logs-header">Logs Bridge</div>
-            <div class="logs-content">
-                <div class="log-entry">
-                    <span class="log-timestamp">2023-10-27 10:30:00</span>
-                    <span class="log-ip">35.230.74.10:0</span>
-                    <span class="log-method">GET</span>
-                    <span class="log-path">/</span>
-                    <span class="log-status status-200">200 OK</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">2023-10-27 10:30:05</span>
-                    <span class="log-ip">23.88.105.37:0</span>
-                    <span class="log-method">GET</span>
-                    <span class="log-path">/</span>
-                    <span class="log-status status-200">200 OK</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">2023-10-27 10:30:10</span>
-                    <span class="log-ip">172.96.140.59:0</span>
-                    <span class="log-method">POST</span>
-                    <span class="log-path">/full_signal</span>
-                    <span class="log-status status-200">200 OK</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">2023-10-27 10:30:15</span>
-                    <span class="log-ip">192.168.11:0</span>
-                    <span class="log-method">GET</span>
-                    <span class="log-path">/status</span>
-                    <span class="log-status status-404">404 ERROR</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">2023-10-27 10:30:20</span>
-                    <span class="log-ip">10.0.0.5:0</span>
-                    <span class="log-method">POST</span>
-                    <span class="log-path">/data</span>
-                    <span class="log-status status-500">500 ERROR</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">2023-10-27 10:30:25</span>
-                    <span class="log-ip">172.16.0.10:0</span>
-                    <span class="log-method">GET</span>
-                    <span class="log-path">/health</span>
-                    <span class="log-status status-200">200 OK</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">2023-10-27 10:30:30</span>
-                    <span class="log-ip">45.33.64.1:0</span>
-                    <span class="log-method">GET</span>
-                    <span class="log-path">/metrics</span>
-                    <span class="log-status status-200">200 OK</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">2023-10-27 10:30:35</span>
-                    <span class="log-ip">8.8.8.8:0</span>
-                    <span class="log-method">GET</span>
-                    <span class="log-path">/config</span>
-                    <span class="log-status status-401">401 ERROR</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">2023-10-27 10:30:40</span>
-                    <span class="log-ip">104.16.249.249:0</span>
-                    <span class="log-method">POST</span>
-                    <span class="log-path">/predict</span>
-                    <span class="log-status status-200">200 OK</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">2023-10-27 10:30:45</span>
-                    <span class="log-ip">172.217.16.14:0</span>
-                    <span class="log-method">GET</span>
-                    <span class="log-path">/analytics</span>
-                    <span class="log-status status-200">200 OK</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">2023-10-27 10:30:50</span>
-                    <span class="log-ip">192.168.1.15:0</span>
-                    <span class="log-method">POST</span>
-                    <span class="log-path">/update</span>
-                    <span class="log-status status-403">403 ERROR</span>
-                </div>
-            </div>
-        </div>
-    </div>
+       
+<div class="logs-container">
+  <div class="logs-header">Logs Bridge</div>
+  <div id="logs" class="logs-content">
+    <!-- Aquí se pintan los logs reales -->
+    <div class="log-entry"><span class="log-timestamp">Cargando logs…</span></div>
+  </div>
+</div>
 
+<script>
+  function statusClass(code){
+    if (code >= 200 && code < 300) return 'status-200';
+    if (code >= 400 && code < 500) return 'status-404';
+    if (code >= 500) return 'status-500';
+    return '';
+  }
+
+  async function loadLogs(){
+    try{
+      const res = await fetch('/logs');
+      const data = await res.json();
+
+      const cont = document.getElementById('logs');
+      cont.innerHTML = '';
+
+      if (!Array.isArray(data) || data.length === 0){
+        cont.innerHTML = '<div class="log-entry"><span class="log-timestamp">Sin logs aún</span></div>';
+        return;
+      }
+
+      // Últimos primero
+      [...data].reverse().forEach(l => {
+        const row = document.createElement('div');
+        row.className = 'log-entry';
+        row.innerHTML = 
+          <span class="log-timestamp">${l.timestamp || ''}</span>
+          <span class="log-ip">${l.ip || ''}</span>
+          <span class="log-method">${l.method || ''}</span>
+          <span class="log-path">${l.path || ''}</span>
+          <span class="log-status ${statusClass(l.status)}">${l.status || ''}</span>
+        ;
+        cont.appendChild(row);
+      });
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  loadLogs();
+  setInterval(loadLogs, 3000); // refresca cada 3s
     <script>
         // Animación para botones del menú
         const menuButtons = document.querySelectorAll('.menu-button');
