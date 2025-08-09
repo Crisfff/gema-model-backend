@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+logs.json
+shared_preferences.json
+.env
+.venv/
