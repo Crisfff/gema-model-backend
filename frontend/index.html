@@ -6,7 +6,7 @@
   <title>GEMA AI SIGNALS</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
-    :root{
+    :root {
       --bg-primary:#121212; --bg-secondary:#1a1a1a; --bg-accent:#2a2a2a; --bg-menu:#0a0a0a;
       --text-primary:#fff; --text-secondary:#ccc; --accent-color:#1e88e5;
       --success-color:#4CAF50; --error-color:#f44336; --border-radius:8px; --transition:.3s ease;
@@ -151,12 +151,6 @@
 
   <script src="https://s3.tradingview.com/tv.js"></script>
   <script>
-    // ====== CONFIG HF ======
-    // Pon aquí tu Space. Si es privado, añade HF_TOKEN.
-    const HF_URL     = "https://crisdeyvid-zenith-ai.hf.space";
-    const HF_APINAME = "on_send";      // nombre de la función en tu app.py
-    const HF_TOKEN   = "";             // opcional: "hf_xxx" si el Space es privado
-
     // Menú activo
     document.querySelectorAll('.menu-button').forEach(btn=>{
       btn.addEventListener('click',()=>{
@@ -165,7 +159,7 @@
       });
     });
 
-    // Save Interval (visual)
+    // Guardar Interval (visual)
     document.querySelector('.save-button').addEventListener('click', function(){
       const intervalInput = document.querySelector('.interval-input');
       if(intervalInput.value){
@@ -261,41 +255,18 @@
       messages.scrollTop = messages.scrollHeight;
     }
 
-    // ====== Llamada a Hugging Face Space ======
-    async function callHF(q){
-      const url = `${HF_URL}/api/predict/`;
-      const headers = {"Content-Type":"application/json"};
-      if (HF_TOKEN) headers["Authorization"] = `Bearer ${HF_TOKEN}`;
-
-      // La mayoría de Spaces con chat reciben [mensaje, historial]
-      const body = {
-        data: [ q, [] ],
-        api_name: HF_APINAME
-      };
-
-      const res = await fetch(url, { method:"POST", headers, body: JSON.stringify(body) });
+    // ====== Llamada al backend propio en Render ======
+    async function callZenith(q){
+      const res = await fetch('/chat', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ message: q })
+      });
       if(!res.ok){
-        throw new Error(`HF ${res.status}: ${await res.text()}`);
+        throw new Error('Backend error ' + res.status);
       }
       const json = await res.json();
-
-      // Intentamos extraer el último mensaje del historial devuelto por Gradio
-      // Formatos posibles:
-      // 1) { data: [ [ [user,bot], ... ] ] }
-      // 2) { data: ["texto"] }
-      let answer = "Sin respuesta";
-      try{
-        if (Array.isArray(json.data)) {
-          if (Array.isArray(json.data[0])) {
-            const hist = json.data[0];
-            const last = hist[hist.length - 1];
-            if (Array.isArray(last)) answer = last[1] || answer;
-          } else if (typeof json.data[0] === "string") {
-            answer = json.data[0];
-          }
-        }
-      }catch(_e){}
-      return answer;
+      return json.reply || 'Sin respuesta';
     }
 
     async function send(){
@@ -303,11 +274,11 @@
       if(!q) return;
       addMsg(q,'user'); input.value='';
       try{
-        const a = await callHF(q);
+        const a = await callZenith(q);
         addMsg(a,'bot');
       }catch(e){
         console.error(e);
-        addMsg("Error llamando al Space de Hugging Face. Revisa la URL/TOKEN.",'bot');
+        addMsg("Error llamando al backend. Revisa /chat.",'bot');
       }
     }
     sendBtn.onclick = send;
