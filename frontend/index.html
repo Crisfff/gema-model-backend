@@ -135,12 +135,12 @@
   <div id="chatDrawer" class="drawer hidden" aria-hidden="true">
     <div class="drawer-header">
       <b>Zenith AI</b>
-      <button class="btn" id="closeChat" style="padding:6px 10px">✕</button>
+      <button class="btn" id="closeChat" type="button" style="padding:6px 10px">✕</button>
     </div>
     <div id="chatMessages" class="messages"></div>
     <div class="composer">
       <input id="chatInput" placeholder="Escribe aquí…">
-      <button class="btn" id="sendChat">Enviar</button>
+      <button class="btn" id="sendChat" type="button">Enviar</button>
     </div>
   </div>
 
@@ -224,13 +224,40 @@
     const API_BASE = "/"; // si tu backend está en otro dominio, cámbialo: "https://tu-puente.onrender.com/"
     const drawer = document.getElementById('chatDrawer');
     const openChatBtns = [document.getElementById('btnOpenChat'), document.getElementById('btnChatTop')];
-    const closeChat = document.getElementById('closeChat');
+    const closeChatBtn = document.getElementById('closeChat');
     const messages = document.getElementById('chatMessages');
     const input = document.getElementById('chatInput');
     const sendBtn = document.getElementById('sendChat');
 
-    openChatBtns.forEach(b => b.onclick = ()=> { drawer.classList.remove('hidden'); drawer.setAttribute('aria-hidden','false'); input.focus(); });
-    closeChat.onclick = ()=> { drawer.classList.add('hidden'); drawer.setAttribute('aria-hidden','true'); };
+    openChatBtns.forEach(b => b.onclick = ()=> { 
+      drawer.classList.remove('hidden'); 
+      drawer.setAttribute('aria-hidden','false'); 
+      input.focus(); 
+    });
+
+    // Cerrar con click en X (a prueba de balas)
+    closeChatBtn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      drawer.classList.add('hidden');
+      drawer.setAttribute('aria-hidden','true');
+    });
+
+    // Cerrar con ESC
+    document.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape' && !drawer.classList.contains('hidden')){
+        drawer.classList.add('hidden');
+        drawer.setAttribute('aria-hidden','true');
+      }
+    });
+
+    // Cerrar al hacer click fuera del contenido (si el fondo del drawer recibe el click)
+    drawer.addEventListener('click', (e)=>{
+      if(e.target.id === 'chatDrawer'){
+        drawer.classList.add('hidden');
+        drawer.setAttribute('aria-hidden','true');
+      }
+    });
 
     function addMsg(text, who='bot'){
       const div = document.createElement('div');
