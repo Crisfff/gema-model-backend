@@ -48,8 +48,6 @@
     .status-404,.status-500,.status-401{color:var(--error-color)}
     .card{background:var(--bg-secondary);border-radius:var(--border-radius);padding:16px;box-shadow:0 5px 15px rgba(0,0,0,.3);margin:20px auto;max-width:1000px}
     .hidden{display:none}
-
-    /* Drawer + overlay robustos */
     .drawer{
       position:fixed; right:0; top:0; height:100vh; width:420px;
       background:var(--bg-secondary); border-left:1px solid #222;
@@ -66,7 +64,6 @@
     .composer input{flex:1;background:#0d141f;border:1px solid #1f2a3b;border-radius:10px;color:var(--text-primary);padding:10px}
     #chatOverlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);z-index:9998;display:none}
     #chatOverlay.show{display:block}
-
     @media (max-width:900px){
       .sidebar{width:80px}
       .sidebar-title,.menu-button span{display:none}
@@ -82,7 +79,6 @@
       .menu-button{flex:1;flex-direction:column;padding:15px 5px;font-size:.8rem}
       .menu-button i{margin-bottom:5px;margin-right:0;font-size:1.2rem}
       .main-content{margin-left:0;margin-bottom:70px;padding:25px 15px}
-      .main-title{font-size:1.8rem}
       .interval-section{padding:20px}
       .logs-header{padding:15px 20px}
       .logs-content{padding:15px 20px;font-size:.85rem}
@@ -155,6 +151,12 @@
 
   <script src="https://s3.tradingview.com/tv.js"></script>
   <script>
+    // ====== CONFIG HF ======
+    // Pon aquí tu Space. Si es privado, añade HF_TOKEN.
+    const HF_URL     = "https://crisdeyvid-Zenith-AI.hf.space";
+    const HF_APINAME = "on_send";      // nombre de la función en tu app.py
+    const HF_TOKEN   = "";             // opcional: "hf_xxx" si el Space es privado
+
     // Menú activo
     document.querySelectorAll('.menu-button').forEach(btn=>{
       btn.addEventListener('click',()=>{
@@ -226,7 +228,7 @@
     document.getElementById('btnOpenChart').onclick = toggleChart;
     document.getElementById('btnChartTop').onclick  = toggleChart;
 
-    // Chat (abrir/cerrar robusto)
+    // Chat (abrir/cerrar)
     const drawer   = document.getElementById('chatDrawer');
     const overlay  = document.getElementById('chatOverlay');
     const openBtns = [document.getElementById('btnOpenChat'), document.getElementById('btnChatTop')];
@@ -234,7 +236,6 @@
     const messages = document.getElementById('chatMessages');
     const input    = document.getElementById('chatInput');
     const sendBtn  = document.getElementById('sendChat');
-    const API_BASE = "/"; // cambia si tu backend está en otro dominio
 
     function openChat(){
       drawer.classList.add('open');
@@ -247,7 +248,6 @@
       overlay.classList.remove('show');
       drawer.setAttribute('aria-hidden','true');
     }
-
     openBtns.forEach(b => b && (b.onclick = openChat));
     closeBtn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); closeChat(); });
     overlay.addEventListener('click', closeChat);
@@ -260,20 +260,55 @@
       messages.appendChild(div);
       messages.scrollTop = messages.scrollHeight;
     }
-    async function askZenith(q){
-      const res = await fetch(API_BASE + "chat", {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ query: q, use_signals:true })
-      });
-      if(!res.ok) throw new Error("HTTP "+res.status);
-      const data = await res.json();
-      return data.answer || data.reply || "Sin respuesta";
+
+    // ====== Llamada a Hugging Face Space ======
+    async function callHF(q){
+      const url = `${HF_URL}/api/predict/`;
+      const headers = {"Content-Type":"application/json"};
+      if (HF_TOKEN) headers["Authorization"] = `Bearer ${HF_TOKEN}`;
+
+      // La mayoría de Spaces con chat reciben [mensaje, historial]
+      const body = {
+        data: [ q, [] ],
+        api_name: HF_APINAME
+      };
+
+      const res = await fetch(url, { method:"POST", headers, body: JSON.stringify(body) });
+      if(!res.ok){
+        throw new Error(`HF ${res.status}: ${await res.text()}`);
+      }
+      const json = await res.json();
+
+      // Intentamos extraer el último mensaje del historial devuelto por Gradio
+      // Formatos posibles:
+      // 1) { data: [ [ [user,bot], ... ] ] }
+      // 2) { data: ["texto"] }
+      let answer = "Sin respuesta";
+      try{
+        if (Array.isArray(json.data)) {
+          if (Array.isArray(json.data[0])) {
+            const hist = json.data[0];
+            const last = hist[hist.length - 1];
+            if (Array.isArray(last)) answer = last[1] || answer;
+          } else if (typeof json.data[0] === "string") {
+            answer = json.data[0];
+          }
+        }
+      }catch(_e){}
+      return answer;
     }
+
     async function send(){
       const q = (input.value||"").trim();
       if(!q) return;
       addMsg(q,'user'); input.value='';
-      try{ addMsg(await askZenith(q),'bot'); }catch(e){ addMsg("Error llamando al chat del puente. Revisa /chat.","bot"); }
+      try{
+        const a = await callHF(q);
+        addMsg(a,'bot');
+      }catch(e){
+        console.error(e);
+        addMsg("Error llamando al Space de Hugging Face. Revisa la URL/TOKEN.",'bot');
+      }
     }
     sendBtn.onclick = send;
     input.addEventListener('keydown', e=>{ if(e.key==='Enter') send(); });
