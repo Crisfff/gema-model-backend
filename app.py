@@ -18,7 +18,7 @@ from services.config import SYMBOL, MODEL_URL, FIREBASE_URL
 # =================== OpenAI ===================
 # Usamos el SDK nuevo. Modelo por defecto: gpt-4o-mini (barato/rápido y suficientemente capaz)
 from openai import OpenAI
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5-mini")
 OPENAI_MAX_TOKENS_MONTH = int(os.getenv("OPENAI_MAX_TOKENS_MONTH", "5000000"))  # opcional
 OPENAI_ALERT_TOKENS     = int(os.getenv("OPENAI_ALERT_TOKENS", "4000000"))      # opcional
 _oai = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
