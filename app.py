@@ -3,13 +3,14 @@ from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.middleware.cors import CORSMiddleware
-import os, json, time, random, requests
+import os, json, time, random, requests, re
 from datetime import datetime, timezone, timedelta
 
 from services.config import (
     LOGS_FILE, FRONTEND_DIR, INDEX_HTML,
 )
 from services.logs import read_logs, write_logs, now_iso
+    # obtiene features/precio para /full_signal
 from services.indicators import obtener_features, get_btc_price
 from services.scheduler import launch_exit_updater
 from services.store import save_last_node
@@ -18,7 +19,6 @@ from services.config import SYMBOL, MODEL_URL, FIREBASE_URL
 # =================== FastAPI ===================
 app = FastAPI(title="Gema Bridge + Zenith AI")
 
-# (opcional) CORS. Si sirves el front desde el mismo dominio, puedes quitarlo.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], allow_credentials=True,
@@ -63,8 +63,7 @@ app.add_middleware(RequestLogger)
 
 # =================== Helpers ===================
 def now_string():
-    # UTC+3 (ajústalo si quieres)
-    dt = datetime.now(timezone.utc) + timedelta(hours=3)
+    dt = datetime.now(timezone.utc) + timedelta(hours=3)  # UTC+3
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 def fb_url(path=""):
@@ -72,7 +71,13 @@ def fb_url(path=""):
     return f"{base}.json" if not path else f"{base}/{path}.json"
 
 CACHE_TTL = 8
-_cache = {"db": (0, None), "memoria_viva": (0, None), "saludos": (0, None), "memoria_fija": (0, None)}
+_cache = {
+    "db": (0, None),
+    "memoria_viva": (0, None),
+    "saludos": (0, None),
+    "memoria_fija": (0, None),
+    "memoria_idx": (0, None),
+}
 
 def fb_get(path="", cache_key=None):
     url = fb_url(path)
@@ -91,7 +96,6 @@ def fb_get(path="", cache_key=None):
 
 def fb_put(path, payload):
     r = requests.put(fb_url(path), json=payload, timeout=10)
-    # invalidar caches
     for k in _cache: _cache[k] = (0, None)
     return r.status_code == 200
 
@@ -106,6 +110,24 @@ def summarize(data, limit=1500):
         return s[:limit] + ("..." if len(s) > limit else "")
     except:
         return str(data)[:limit]
+
+# ---------- Normalización robusta ----------
+try:
+    from unidecode import unidecode
+except:
+    def unidecode(x): return x
+
+def normalize_key(s: str) -> str:
+    """minúsculas + sin tildes + sin signos + espacios simples"""
+    s = (s or "").strip().lower()
+    s = unidecode(s)
+    s = re.sub(r"[^\w\s]", " ", s)
+    s = re.sub(r"\s+", " ", s)
+    return s.strip()
+
+def tokenize(s: str) -> set:
+    s = normalize_key(s)
+    return set(w for w in s.split() if len(w) > 2)
 
 # Defaults (si no existen en Firebase)
 DEFAULT_SALUDOS = {
@@ -125,16 +147,8 @@ def get_saludos():
     return data or DEFAULT_SALUDOS
 
 def get_memoria_fija():
-    # admite /memoria o /documentacion/memoria si luego lo mueves
     data = fb_get("memoria", cache_key="memoria_fija") or fb_get("documentacion/memoria", cache_key="memoria_fija")
     return data or DEFAULT_MEMORIA_FIJA
-
-def norm(s: str) -> str:
-    try:
-        from unidecode import unidecode
-        return unidecode((s or "").strip().lower())
-    except:
-        return (s or "").strip().lower()
 
 # =================== Endpoints existentes ===================
 @app.get("/logs")
@@ -171,13 +185,10 @@ def full_signal():
             "datetime_exit": None
         }
 
-        # Crea nodo en Firebase
         requests.put(fb_url(f"signals/{node_id}"), json=init_data, timeout=20)
 
-        # Guarda para el job de salida (scheduler)
         save_last_node(node_id, timestamp)
 
-        # log extra
         logs = read_logs()
         logs.append({
             "timestamp": now_iso(),
@@ -197,7 +208,7 @@ def full_signal():
 def health():
     return {"ok": True, "msg": "Backend running!"}
 
-# =================== NUEVO: Endpoints Firebase ===================
+# =================== Firebase helpers públicos ===================
 @app.get("/firebase")
 def firebase_all():
     data = fb_get("", cache_key="db")
@@ -213,7 +224,7 @@ def firebase_logs():
     data = fb_get("logs", cache_key="db")
     return data or {}
 
-# =================== NUEVO: Memoria Viva ===================
+# =================== Memoria Viva ===================
 @app.get("/memoria")
 def memoria_list():
     data = fb_get("memoria_viva", cache_key="memoria_viva") or {}
@@ -242,81 +253,115 @@ def memoria_delete_contains(q: str):
     dels = []
     for k, v in data.items():
         txt = v if isinstance(v, str) else v.get("texto", "")
-        if norm(q) in norm(txt):
+        if normalize_key(q) in normalize_key(txt):
             dels.append(k)
     for k in dels:
         fb_put(f"memoria_viva/{k}", None)
     _cache["memoria_viva"] = (0, None)
     return {"ok": True, "deleted": len(dels)}
 
-# =================== NUEVO: Chat de Zenith ===================
+# --- búsqueda aproximada en memoria_viva ---
+def search_memoria_viva_best(query: str):
+    qtokens = tokenize(query)
+    data = fb_get("memoria_viva", cache_key="memoria_viva") or {}
+    best, best_score = None, 0
+    for k, v in data.items():
+        texto = v if isinstance(v, str) else v.get("texto", "")
+        score = len(tokenize(texto) & qtokens)
+        if score > best_score:
+            best, best_score = texto, score
+    return best, best_score
+
+# =================== Chat de Zenith ===================
 @app.post("/chat")
 def chat(body: dict = Body(...)):
     msg_raw = (body.get("message") or "").strip()
     if not msg_raw:
         return {"reply": "Escríbeme algo 😉"}
-    msg = norm(msg_raw)
+    msg_norm = normalize_key(msg_raw)
 
-    # 0) Comandos de memoria viva
-    if msg.startswith("recuerda que "):
-        txt = msg_raw[len("recuerda que "):].strip()
-        if not txt:
-            return {"reply": "Dime qué debo recordar, asere."}
-        ts = datetime.utcnow().strftime("%Y-%m-%d-%H:%M:%S")
-        ok = fb_patch("memoria_viva", {ts: {"texto": txt}})
-        return {"reply": "✅ Anotado en mi memoria viva." if ok else "❌ No pude guardar eso ahora."}
+    # 0) Comandos de memoria
+    if msg_norm.startswith("recuerda que "):
+        resto = msg_raw[len("recuerda que "):].strip()
+        m = re.match(r"(.+?)\s*=\s*(.+)", resto)
+        if m:
+            clave_original = m.group(1).strip()
+            valor = m.group(2).strip()
+            clave_norm = normalize_key(clave_original)
 
-    if msg in {"que recuerdas", "qué recuerdas", "muestra memoria", "lista memoria"}:
+            ok1 = fb_patch("memoria", {clave_original: valor})
+            ok2 = fb_patch("memoria_norm", {clave_norm: clave_original})
+            if ok1 and ok2:
+                return {"reply": f"✅ Guardado: '{clave_original}' → '{valor}'"}
+            return {"reply": "❌ No pude guardar eso ahora."}
+        else:
+            ts = datetime.utcnow().strftime("%Y-%m-%d-%H:%M:%S")
+            ok = fb_patch("memoria_viva", {ts: {"texto": resto}})
+            return {"reply": "✅ Anotado en mi memoria viva." if ok else "❌ No pude guardar eso."}
+
+    if msg_norm in {"que recuerdas", "que recuerdas?", "que recuerdas ?", "muestra memoria", "lista memoria"}:
         arr = memoria_list()
         if not arr:
             return {"reply": "🤔 No tengo recuerdos vivos todavía."}
         bullets = "\n- ".join(x["texto"] for x in arr[-50:])
         return {"reply": "📚 Esto es lo que recuerdo:\n- " + bullets}
 
-    if msg.startswith("olvida "):
+    if msg_norm.startswith("olvida "):
         frag = msg_raw[len("olvida "):].strip()
         data = fb_get("memoria_viva") or {}
         dels = []
         for k, v in data.items():
             txt = v if isinstance(v, str) else v.get("texto","")
-            if norm(frag) in norm(txt):
+            if normalize_key(frag) in normalize_key(txt):
                 dels.append(k)
         for k in dels:
             fb_put(f"memoria_viva/{k}", None)
         _cache["memoria_viva"] = (0, None)
         return {"reply": f"🧹 Listo, olvidé {len(dels)} recuerdo(s) que contenían “{frag}”."}
 
-    if msg in {"borra memoria", "borra toda la memoria"}:
+    if msg_norm in {"borra memoria", "borra toda la memoria"}:
         fb_put("memoria_viva", {})
         return {"reply": "🧼 Memoria viva vaciada."}
 
-    # 1) Saludos (desde Firebase si hay, sino defaults)
+    # 1) Saludos (FB si hay, sino defaults) — comparación normalizada
     saludos = get_saludos()
     for k, v in (saludos or {}).items():
-        if norm(k) == msg:
+        if normalize_key(k) == msg_norm:
             return {"reply": v}
 
-    # 2) Memoria fija (desde Firebase si hay, sino defaults)
-    memoria_fija = get_memoria_fija()
-    for k, v in (memoria_fija or {}).items():
-        if norm(k) == msg:
+    # 2) Memoria fija Q/A con índice normalizado
+    memoria_raw = fb_get("memoria", cache_key="memoria_fija") or {}
+    memoria_idx = fb_get("memoria_norm", cache_key="memoria_idx") or {}
+
+    if msg_norm in memoria_idx:
+        clave_original = memoria_idx[msg_norm]
+        if clave_original in memoria_raw:
+            return {"reply": memoria_raw[clave_original]}
+
+    for k, v in (memoria_raw or {}).items():
+        if normalize_key(k) == msg_norm:
             return {"reply": v}
 
-    # 3) Datos del proyecto (signals/logs/DB completa)
-    if any(w in msg for w in ["signals", "signal", "señal", "señales"]):
+    # 3) Datos del proyecto (signals/logs/DB)
+    if any(w in msg_norm for w in ["signal", "signals", "senal", "senales"]):
         data = fb_get("signals", cache_key="db")
         return {"reply": "📊 Signals:\n\n" + (summarize(data) if data is not None else "No encontré /signals")}
 
-    if any(w in msg for w in ["logs", "log"]):
+    if "log" in msg_norm:
         data = fb_get("logs", cache_key="db")
         return {"reply": "🗒 Logs:\n\n" + (summarize(data) if data is not None else "No encontré /logs")}
 
-    if any(w in msg for w in ["firebase", "db completa", "base de datos"]):
+    if any(w in msg_norm for w in ["firebase", "db completa", "base de datos"]):
         data = fb_get("", cache_key="db")
         return {"reply": "📡 Firebase (resumen):\n\n" + (summarize(data) if data is not None else "No pude leer la DB")}
 
+    # 3.5) Intento de respuesta desde memoria_viva (match por palabras)
+    mv_text, mv_score = search_memoria_viva_best(msg_raw)
+    if mv_text and mv_score >= 2:
+        return {"reply": f"🧠 (de mi memoria) {mv_text}"}
+
     # 4) Fallback
-    return {"reply": "Asere, eso no está en mi base ahora mismo. Dímelo con más detalle o dime: “recuerda que …” para guardarlo."}
+    return {"reply": "Eso no está en mi base aún. Dímelo con más detalle o usa: “recuerda que <pregunta> = <respuesta>” para enseñarme."}
 
 # =================== Lanzar scheduler en background ===================
 launch_exit_updater()
