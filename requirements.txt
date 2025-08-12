@@ -4,3 +4,4 @@ python_jwt
 fastapi
 uvicorn
 firebase-admin
+openai>=1.35.0
