@@ -15,23 +15,20 @@ from services.scheduler import launch_exit_updater
 from services.store import save_last_node
 from services.config import SYMBOL, MODEL_URL, FIREBASE_URL
 
-# =================== OpenAI (diagnóstico robusto) ===================
+# =================== OpenAI (solo GPT para el chat) ===================
 from openai import OpenAI
 
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-OPENAI_ORG_ID = os.getenv("OPENAI_ORG_ID", "")          # opcional para sk-proj
-OPENAI_PROJECT_ID = os.getenv("OPENAI_PROJECT_ID", "")  # opcional para sk-proj
+OPENAI_MODEL       = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+OPENAI_API_KEY     = os.getenv("OPENAI_API_KEY", "")
+OPENAI_ORG_ID      = os.getenv("OPENAI_ORG_ID", "")          # opcional (útil con keys sk-proj)
+OPENAI_PROJECT_ID  = os.getenv("OPENAI_PROJECT_ID", "")      # opcional (útil con keys sk-proj)
 
-def _mask(k: str) -> str:
-    if not k: return "(vacía)"
-    return k[:8] + "..." + k[-4:]
+if not OPENAI_API_KEY:
+    print("⚠️  Falta OPENAI_API_KEY en variables de entorno.")
 
-print("[OpenAI] KEY:", _mask(OPENAI_API_KEY), "ORG:", OPENAI_ORG_ID or "(none)", "PROJ:", OPENAI_PROJECT_ID or "(none)")
-
-# Cliente: soporta tanto keys clásicas sk- como sk-proj-
+# Cliente compatible con sk- y sk-proj-
 _oai = OpenAI(
-    api_key=OPENAI_API_KEY,
+    api_key=OPENAI_API_KEY or None,
     organization=OPENAI_ORG_ID or None,
     project=OPENAI_PROJECT_ID or None,
 )
@@ -169,7 +166,7 @@ def get_memoria_fija():
     data = fb_get("memoria", cache_key="memoria_fija") or fb_get("documentacion/memoria", cache_key="memoria_fija")
     return data or DEFAULT_MEMORIA_FIJA
 
-# =================== Endpoints existentes ===================
+# =================== Endpoints existentes (señales/logs/frontend/health) ===================
 @app.get("/logs")
 def get_logs():
     return JSONResponse(read_logs())
@@ -221,12 +218,10 @@ def full_signal():
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
-# Health
 @app.get("/health")
 def health():
     return {"ok": True, "msg": "Backend running!"}
 
-# =================== Firebase helpers públicos ===================
 @app.get("/firebase")
 def firebase_all():
     data = fb_get("", cache_key="db")
@@ -242,7 +237,7 @@ def firebase_logs():
     data = fb_get("logs", cache_key="db")
     return data or {}
 
-# =================== Memoria Viva (endpoints utilitarios) ===================
+# =================== Memoria Viva (utilitarios) ===================
 @app.get("/memoria")
 def memoria_list():
     data = fb_get("memoria_viva", cache_key="memoria_viva") or {}
@@ -278,7 +273,6 @@ def memoria_delete_contains(q: str):
     _cache["memoria_viva"] = (0, None)
     return {"ok": True, "deleted": len(dels)}
 
-# --- búsqueda aproximada en memoria_viva ---
 def search_memoria_viva_best(query: str):
     qtokens = tokenize(query)
     data = fb_get("memoria_viva", cache_key="memoria_viva") or {}
@@ -292,7 +286,6 @@ def search_memoria_viva_best(query: str):
 
 # =================== Conversaciones (historial) ===================
 def get_cid(body: dict) -> str:
-    # Permite que el front pase un "cid" (conversation id). Si no, usa por día.
     cid = (body.get("cid") or "").strip()
     if not cid:
         cid = datetime.utcnow().strftime("default-%Y%m%d")
@@ -311,35 +304,24 @@ def convo_get_last(cid: str, limit: int = 10):
     return [{"t": k, "role": v.get("role"), "text": v.get("text")} for k, v in items]
 
 # =================== OpenAI helpers ===================
-def _get_month_key():
-    now = datetime.utcnow()
-    return f"usage/{now.strftime('%Y-%m')}"
-
-def _get_usage():
-    data = fb_get(_get_month_key()) or {}
-    return int(data.get("tokens_used", 0))
-
-def _add_usage(delta):
-    k = _get_month_key()
-    used = _get_usage() + int(delta)
-    fb_patch(k, {"tokens_used": used})
-    return used
-
 def build_system_prompt():
-    # Tono/persona + memoria fija + saludos (como guía)
+    # Tono/persona + memoria fija + saludos (como guía para el modelo)
     saludos = fb_get("saludos") or {}
     memoria_fija = fb_get("memoria") or {}
     persona = (
         "Eres Zenith AI, cerebro de Gema AI Signals. Español cubano natural, "
-        "inteligente, claro, con chispa e ironía cuando haga falta (sin pasarte). "
-        "No das señales; eso lo hace Gema. Respeta el proyecto y evita inventar "
-        "datos técnicos si no están en Firebase. Sé breve y directa."
+        "inteligente, claro y con chispa/ironía cuando encaje (sin pasarte). "
+        "No das señales; eso lo hace Gema. Si no sabes algo del proyecto y no está en Firebase, "
+        "dilo sin inventar. Responde breve y directa."
     )
     base = {"persona": persona, "memoria_fija": memoria_fija, "saludos": saludos}
     return json.dumps(base, ensure_ascii=False)
 
-def ask_openai_budgeted(user_msg: str, cid: str):
-    # Contexto: últimos 10 turnos de la conversación + últimos recuerdos vivos
+def ask_openai(user_msg: str, cid: str) -> str:
+    if not OPENAI_API_KEY:
+        return "No tengo API key configurada. Agrega OPENAI_API_KEY en el servidor."
+
+    # Contexto: últimos 10 turnos + últimos recuerdos de memoria viva
     hist = convo_get_last(cid, limit=10)
     mem_viva = fb_get("memoria_viva") or {}
     recuerdos = []
@@ -352,33 +334,21 @@ def ask_openai_budgeted(user_msg: str, cid: str):
     history_text = "\n".join([f"{h['role']}: {h['text']}" for h in hist])
     recuerdos_text = "\n".join(f"- {t}" for t in recuerdos)
 
-    used = _get_usage()
-    if used >= OPENAI_MAX_TOKENS_MONTH:
-        return "⛔ Presupuesto de OpenAI agotado por este mes. Pruébame el próximo ciclo."
+    try:
+        resp = _oai.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Historial reciente:\n{history_text}\n\nRecuerdos:\n{recuerdos_text}\n\nPregunta:\n{user_msg}"}
+            ],
+            temperature=0.5,
+            max_tokens=400,
+        )
+        return resp.choices[0].message.content.strip()
+    except Exception as e:
+        return f"Error consultando el modelo: {e}"
 
-    resp = _oai.chat.completions.create(
-        model=OPENAI_MODEL,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Historial reciente:\n{history_text}\n\nRecuerdos:\n{recuerdos_text}\n\nPregunta:\n{user_msg}"}
-        ],
-        temperature=0.5,
-        max_tokens=400,
-    )
-    txt = resp.choices[0].message.content.strip()
-
-    usage = getattr(resp, "usage", None)
-    if usage:
-        total_tokens = (getattr(usage, "total_tokens", 0)
-                        or (getattr(usage, "prompt_tokens", 0) + getattr(usage, "completion_tokens", 0)))
-        new_used = _add_usage(total_tokens)
-        if new_used >= OPENAI_ALERT_TOKENS and new_used < OPENAI_MAX_TOKENS_MONTH:
-            ts = datetime.utcnow().strftime("%Y-%m-%d-%H:%M:%S")
-            fb_patch("memoria_viva", {ts: {"texto": f"⚠️ Alerta uso OpenAI: {new_used} tokens este mes"}})
-
-    return txt
-
-# =================== Chat de Zenith (SOLO GPT + guarda en Firebase) ===================
+# =================== Chat de Zenith (solo GPT + guarda en Firebase) ===================
 @app.post("/chat")
 def chat(body: dict = Body(...)):
     msg_raw = (body.get("message") or "").strip()
@@ -391,13 +361,9 @@ def chat(body: dict = Body(...)):
     convo_add_turn(cid, "user", msg_raw)
 
     # 2) llama a GPT con contexto (historial + memoria viva)
-    try:
-        ai_txt = ask_openai_budgeted(msg_raw, cid)
-        if not ai_txt:
-            ai_txt = "No pude consultar el modelo ahora. Intenta otra vez en un momento."
-    except Exception as e:
-        print("OpenAI error:", e)
-        ai_txt = f"Error consultando el modelo: {e}"
+    ai_txt = ask_openai(msg_raw, cid)
+    if not ai_txt:
+        ai_txt = "No pude consultar el modelo ahora. Intenta otra vez en un momento."
 
     # 3) guarda turno de la asistente
     convo_add_turn(cid, "assistant", ai_txt)
