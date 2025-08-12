@@ -15,13 +15,26 @@ from services.scheduler import launch_exit_updater
 from services.store import save_last_node
 from services.config import SYMBOL, MODEL_URL, FIREBASE_URL
 
-# =================== OpenAI ===================
-# Usamos el SDK nuevo. Modelo por defecto: gpt-4o-mini (barato/rápido y suficientemente capaz)
+# =================== OpenAI (diagnóstico robusto) ===================
 from openai import OpenAI
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5-mini")
-OPENAI_MAX_TOKENS_MONTH = int(os.getenv("OPENAI_MAX_TOKENS_MONTH", "5000000"))  # opcional
-OPENAI_ALERT_TOKENS     = int(os.getenv("OPENAI_ALERT_TOKENS", "4000000"))      # opcional
-_oai = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_ORG_ID = os.getenv("OPENAI_ORG_ID", "")          # opcional para sk-proj
+OPENAI_PROJECT_ID = os.getenv("OPENAI_PROJECT_ID", "")  # opcional para sk-proj
+
+def _mask(k: str) -> str:
+    if not k: return "(vacía)"
+    return k[:8] + "..." + k[-4:]
+
+print("[OpenAI] KEY:", _mask(OPENAI_API_KEY), "ORG:", OPENAI_ORG_ID or "(none)", "PROJ:", OPENAI_PROJECT_ID or "(none)")
+
+# Cliente: soporta tanto keys clásicas sk- como sk-proj-
+_oai = OpenAI(
+    api_key=OPENAI_API_KEY,
+    organization=OPENAI_ORG_ID or None,
+    project=OPENAI_PROJECT_ID or None,
+)
 
 # =================== FastAPI ===================
 app = FastAPI(title="Gema Bridge + Zenith AI")
