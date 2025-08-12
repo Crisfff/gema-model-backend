@@ -5,3 +5,4 @@ fastapi
 uvicorn
 firebase-admin
 openai>=1.40.0
+unidecode
