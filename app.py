@@ -18,7 +18,7 @@ from services.config import SYMBOL, MODEL_URL, FIREBASE_URL
 # =================== OpenAI ===================
 # Usamos el SDK nuevo. Modelo por defecto: gpt-4o-mini (barato/rápido y suficientemente capaz)
 from openai import OpenAI
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5-mini")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 OPENAI_MAX_TOKENS_MONTH = int(os.getenv("OPENAI_MAX_TOKENS_MONTH", "5000000"))  # opcional
 OPENAI_ALERT_TOKENS     = int(os.getenv("OPENAI_ALERT_TOKENS", "4000000"))      # opcional
 _oai = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -365,7 +365,7 @@ def ask_openai_budgeted(user_msg: str, cid: str):
 
     return txt
 
-# =================== Chat de Zenith ===================
+# =================== Chat de Zenith (SOLO GPT + guarda en Firebase) ===================
 @app.post("/chat")
 def chat(body: dict = Body(...)):
     msg_raw = (body.get("message") or "").strip()
@@ -373,118 +373,23 @@ def chat(body: dict = Body(...)):
         return {"reply": "Escríbeme algo 😉"}
 
     cid = get_cid(body)
-    msg_norm = normalize_key(msg_raw)
 
-    # Log turno de usuario
+    # 1) guarda turno del usuario
     convo_add_turn(cid, "user", msg_raw)
 
-    # 0) Comandos de memoria
-    if msg_norm.startswith("recuerda que "):
-        resto = msg_raw[len("recuerda que "):].strip()
-        m = re.match(r"(.+?)\s*=\s*(.+)", resto)
-        if m:
-            clave_original = m.group(1).strip()
-            valor = m.group(2).strip()
-            clave_norm = normalize_key(clave_original)
-            ok1 = fb_patch("memoria", {clave_original: valor})
-            ok2 = fb_patch("memoria_norm", {clave_norm: clave_original})
-            out = "✅ Guardado: '{}'\n→ '{}'".format(clave_original, valor) if (ok1 and ok2) else "❌ No pude guardar eso ahora."
-            convo_add_turn(cid, "assistant", out)
-            return {"reply": out}
-        else:
-            ts = datetime.utcnow().strftime("%Y-%m-%d-%H:%M:%S")
-            ok = fb_patch("memoria_viva", {ts: {"texto": resto}})
-            out = "✅ Anotado en mi memoria viva." if ok else "❌ No pude guardar eso."
-            convo_add_turn(cid, "assistant", out)
-            return {"reply": out}
-
-    if msg_norm in {"que recuerdas", "que recuerdas?", "que recuerdas ?", "muestra memoria", "lista memoria"}:
-        arr = memoria_list()
-        out = "🤔 No tengo recuerdos vivos todavía." if not arr else ("📚 Esto es lo que recuerdo:\n- " + "\n- ".join(x["texto"] for x in arr[-50:]))
-        convo_add_turn(cid, "assistant", out)
-        return {"reply": out}
-
-    if msg_norm.startswith("olvida "):
-        frag = msg_raw[len("olvida "):].strip()
-        data = fb_get("memoria_viva") or {}
-        dels = []
-        for k, v in data.items():
-            txt = v if isinstance(v, str) else v.get("texto","")
-            if normalize_key(frag) in normalize_key(txt):
-                dels.append(k)
-        for k in dels:
-            fb_put(f"memoria_viva/{k}", None)
-        _cache["memoria_viva"] = (0, None)
-        out = f"🧹 Listo, olvidé {len(dels)} recuerdo(s) que contenían “{frag}”."
-        convo_add_turn(cid, "assistant", out)
-        return {"reply": out}
-
-    if msg_norm in {"borra memoria", "borra toda la memoria"}:
-        fb_put("memoria_viva", {})
-        out = "🧼 Memoria viva vaciada."
-        convo_add_turn(cid, "assistant", out)
-        return {"reply": out}
-
-    # 1) Saludos (FB si hay, sino defaults)
-    saludos = get_saludos()
-    for k, v in (saludos or {}).items():
-        if normalize_key(k) == msg_norm:
-            convo_add_turn(cid, "assistant", v)
-            return {"reply": v}
-
-    # 2) Memoria fija Q/A con índice normalizado
-    memoria_raw = fb_get("memoria", cache_key="memoria_fija") or {}
-    memoria_idx = fb_get("memoria_norm", cache_key="memoria_idx") or {}
-    if msg_norm in memoria_idx:
-        clave_original = memoria_idx[msg_norm]
-        if clave_original in memoria_raw:
-            v = memoria_raw[clave_original]
-            convo_add_turn(cid, "assistant", v)
-            return {"reply": v}
-    for k, v in (memoria_raw or {}).items():
-        if normalize_key(k) == msg_norm:
-            convo_add_turn(cid, "assistant", v)
-            return {"reply": v}
-
-    # 3) Datos del proyecto (signals/logs/DB)
-    if any(w in msg_norm for w in ["signal", "signals", "senal", "senales"]):
-        data = fb_get("signals", cache_key="db")
-        out = "📊 Signals:\n\n" + (summarize(data) if data is not None else "No encontré /signals")
-        convo_add_turn(cid, "assistant", out)
-        return {"reply": out}
-
-    if "log" in msg_norm:
-        data = fb_get("logs", cache_key="db")
-        out = "🗒 Logs:\n\n" + (summarize(data) if data is not None else "No encontré /logs")
-        convo_add_turn(cid, "assistant", out)
-        return {"reply": out}
-
-    if any(w in msg_norm for w in ["firebase", "db completa", "base de datos"]):
-        data = fb_get("", cache_key="db")
-        out = "📡 Firebase (resumen):\n\n" + (summarize(data) if data is not None else "No pude leer la DB")
-        convo_add_turn(cid, "assistant", out)
-        return {"reply": out}
-
-    # 3.5) Intento con memoria_viva (match por palabras)
-    mv_text, mv_score = search_memoria_viva_best(msg_raw)
-    if mv_text and mv_score >= 2:
-        out = f"🧠 (de mi memoria) {mv_text}"
-        convo_add_turn(cid, "assistant", out)
-        return {"reply": out}
-
-    # 3.8) OpenAI como cerebro auxiliar (con tono/persona/contexto)
+    # 2) llama a GPT con contexto (historial + memoria viva)
     try:
         ai_txt = ask_openai_budgeted(msg_raw, cid)
-        if ai_txt:
-            convo_add_turn(cid, "assistant", ai_txt)
-            return {"reply": ai_txt}
+        if not ai_txt:
+            ai_txt = "No pude consultar el modelo ahora. Intenta otra vez en un momento."
     except Exception as e:
         print("OpenAI error:", e)
+        ai_txt = f"Error consultando el modelo: {e}"
 
-    # 4) Fallback
-    out = "Eso no está en mi base aún. Dímelo con más detalle o usa: “recuerda que <pregunta> = <respuesta>” para enseñarme."
-    convo_add_turn(cid, "assistant", out)
-    return {"reply": out}
+    # 3) guarda turno de la asistente
+    convo_add_turn(cid, "assistant", ai_txt)
+
+    return {"reply": ai_txt}
 
 # =================== Lanzar scheduler en background ===================
 launch_exit_updater()
