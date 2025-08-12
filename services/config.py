@@ -8,6 +8,9 @@ MODEL_URL     = os.getenv("MODEL_URL", "https://crisdeyvid-gema-ai-model.hf.spac
 CRYPTO_API    = os.getenv("CRYPTO_API", "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD")
 FIREBASE_URL  = os.getenv("FIREBASE_URL", "https://moviemaniaprime-default-rtdb.firebaseio.com")
 
+# === API Key para OpenAI ===
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "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")
+
 # archivos
 SHARED_PREFS  = os.getenv("SHARED_PREFS", "shared_preferences.json")
 LOGS_FILE     = os.getenv("LOGS_FILE", "logs.json")
